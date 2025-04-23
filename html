@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Posto Saúde</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="shortcut icon" href="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTKjGghihhhAH85zt0uuCRgYPMhacLvWLa2ig&s">
+    <script>
+        function mostrarTela(tela) {
+            document.querySelectorAll('.tela').forEach(t => t.style.display = 'none');
+            document.getElementById(tela).style.display = 'block';
+        }
+    </script>
+</head>
+<body>
+
+    <!-- Tela de Login -->
+    <section id="login" class="tela">
+        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRpxVbmb1ZatxwcwZ9fzqFlPmfg4pG2lNZMlA&s" width="200" height="200" />
+        <form onsubmit="event.preventDefault(); mostrarTela('perfil');">
+            <h2>Bem-vindo!</h2>
+            <input type="text" placeholder="Usuário" required>
+            <input type="email" placeholder="E-mail" required>
+            <input type="password" placeholder="Senha" required>
+            <button type="submit">Conectar-se</button>
+            <a href="#" onclick="mostrarTela('recuperarSenha')">Esqueci a senha</a>
+            <p>Não tem uma conta? <a href="#" onclick="mostrarTela('cadastro')">Cadastre-se</a></p>
+        </form>
+    </section>
+
+    <!-- Tela de Cadastro -->
+    <section id="cadastro" class="tela" style="display: none;">
+        <h2>Criar Conta</h2>
+        <form onsubmit="event.preventDefault(); mostrarTela('perfil');">
+            <input type="text" placeholder="Nome Completo" required>
+            <input type="email" placeholder="E-mail" required>
+            <input type="password" placeholder="Senha" required>
+            <input type="password" placeholder="Confirme sua Senha" required>
+            <button type="submit">Cadastrar</button>
+            <p>Já tem uma conta? <a href="#" onclick="mostrarTela('login')">Entre aqui</a></p>
+        </form>
+    </section>
+
+    <!-- Tela de Recuperação de Senha -->
+    <section id="recuperarSenha" class="tela" style="display: none;">
+        <h2>Recuperar Senha</h2>
+        <form onsubmit="event.preventDefault(); alert('Link de recuperação enviado!'); mostrarTela('login');">
+            <input type="email" placeholder="Digite seu e-mail" required>
+            <button type="submit">Enviar Link</button>
+            <a href="#" onclick="mostrarTela('login')">Voltar ao Login</a>
+        </form>
+    </section>
+
+    <!-- Tela de Perfil do Usuário -->
+    <section id="perfil" class="tela" style="display: none;">
+        <h2>Bem-vindo, Usuário!</h2>
+        <p>Aqui você pode acessar suas informações e gerenciar seus agendamentos.</p>
+        <button onclick="mostrarTela('servicos')">Agendar Consulta</button>
+        <button onclick="mostrarTela('contato')">Fale Conosco</button>
+        <button onclick="mostrarTela('login')">Sair</button>
+    </section>
+
+    <!-- Tela de Serviços -->
+    <section id="servicos" class="tela" style="display: none;">
+        <h2>Serviços de Agendamento</h2>
+        <ul>
+            <li>Médicos disponíveis</li>
+            <li>Cadastro de agendamentos</li>
+            <li>Calendário de disponibilidade</li>
+            <li>Especialidades</li>
+            <li>Cancelamento de cadastro</li>
+        </ul>
+        <button onclick="mostrarTela('perfil')">Voltar</button>
+    </section>
+
+    <!-- Tela de Contato -->
+    <section id="contato" class="tela" style="display: none;">
+        <h2>Como posso ajudar?</h2>
+        <p>Nossa equipe está disponível 24 horas, nos contate pelos meios abaixo:</p>
+        <button>Nossa equipe</button>
+        <button>Nossos serviços</button>
+        <button>Marque uma consulta</button>
+        <button>Recursos</button>
+        <button onclick="mostrarTela('perfil')">Voltar</button>
+    </section>
+
+</body>
+</html>

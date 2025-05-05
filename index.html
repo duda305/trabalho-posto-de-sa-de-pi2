@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>VIVER - Médicos Disponíveis</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #e9f5f1;
+            margin: 20px;
+        }
+        h1 {
+            color: #2a7f62;
+        }
+        .medico {
+            background-color: #ffffff;
+            border: 1px solid #cce5db;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #2a7f62;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #245f4d;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>VIVER - Médicos Disponíveis</h1>
+
+    <div id="lista-medicos"></div>
+
+    <button onclick="exportarMedicos()">Exportar Lista de Médicos</button>
+
+    <script>
+        // Dados em formato JSON
+        const medicosDisponiveis = [
+            { nome: "Dra. Luiza Costa", especialidade: "Pediatria", horario: "08:00 - 12:00" },
+            { nome: "Dr. Carlos Eduardo", especialidade: "Clínico Geral", horario: "10:00 - 14:00" },
+            { nome: "Dra. Maria Almeida", especialidade: "Ginecologia", horario: "13:00 - 17:00" },
+            { nome: "Dra. Allana Damázio", especialidade: "Psicóloga", horario: "09:00 - 13:00" }
+            { nome: "Dra. Jayslane Santos", especialidade: "Dentista", horario: "10:00 - 16:00" }
+        ];
+
+        // Loop para exibir médicos na página
+        const container = document.getElementById("lista-medicos");
+
+        medicosDisponiveis.forEach(medico => {
+            const div = document.createElement("div");
+            div.className = "medico";
+            div.innerHTML = `
+                <strong>Nome:</strong> ${medico.nome} <br>
+                <strong>Especialidade:</strong> ${medico.especialidade} <br>
+                <strong>Horário:</strong> ${medico.horario}
+            `;
+            container.appendChild(div);
+        });
+
+        // Função para exportar dados como JSON
+        function exportarMedicos() {
+            const blob = new Blob([JSON.stringify(medicosDisponiveis, null, 2)], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = "medicos-disponiveis.json";
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    </script>
+
+</body>
+</html>

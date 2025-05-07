@@ -1,3 +1,5 @@
+import const medicos
+
 // Função para carregar os médicos do arquivo JSON
 function carregarMedicos() {
     const loader = document.getElementById('loader');
@@ -7,7 +9,7 @@ function carregarMedicos() {
     loader.style.display = 'flex';
 
     // Carregar os dados do arquivo JSON
-    fetch('medicos.json')
+    fetch('medicos.js')
         .then(response => response.json())
         .then(data => {
             // Limpar o conteúdo existente

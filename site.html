@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Posto Saúde</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="site.css">
     <link rel="shortcut icon" href="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTKjGghihhhAH85zt0uuCRgYPMhacLvWLa2ig&s">
     <script>
         function mostrarTela(tela) {
@@ -65,11 +65,13 @@
     <section id="servicos" class="tela" style="display: none;">
         <h2>Serviços de Agendamento</h2>
         <ul>
-            <li>Médicos disponíveis</li>
-            <li>Cadastro de agendamentos</li>
-            <li>Calendário de disponibilidade</li>
-            <li>Especialidades</li>
-            <li>Cancelamento de cadastro</li>
+            <div class="grid_medicos">
+            <a class="redireciona" href="../projeto/index.html">Médicos disponíveis</a>
+            <a class="redireciona">Cadastro de agendamentos</a>
+            <a class="redireciona">Calendário de disponibilidade</a>
+            <a class="redireciona">Especialidades</a>
+            <a class="redireciona">Cancelamento de cadastro</a>
+            </div>
         </ul>
         <button onclick="mostrarTela('perfil')">Voltar</button>
     </section>

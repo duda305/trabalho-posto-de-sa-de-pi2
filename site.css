@@ -49,3 +49,17 @@ ul li {
     padding: 10px;
     border-radius: 5px;
 }
+
+.redireciona {
+    list-style: none;
+    padding: 0;
+    background: #e0f7fa;
+    margin: 5px;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+.grid_medicos {
+    display: flex;
+    flex-direction: column;
+}

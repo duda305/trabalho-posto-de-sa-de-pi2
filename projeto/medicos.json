@@ -19,12 +19,12 @@
         "especialidade": "Oftalmologista",
         "descricao": "Especialista em cuidados com os olhos, tratamento de catarata e problemas de visão.",
         "foto": "https://via.placeholder.com/150"
-    }
+    },
    {
         "id": "medica4",
         "nome": "Dra. Jayslane Santos",
         "especialidade": "Ginecologista",
         "descricao": "Especialista na saúde da mulher, acompanhamento pré-natal, menopausa e mais.",
         "foto": "https://via.placeholder.com/150"
-    }
-]
+   },
+];

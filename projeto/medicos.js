@@ -1,4 +1,4 @@
-[
+export const medicos = [
     {
         "id": "medica1",
         "nome": "Dra. Luiza Costa",

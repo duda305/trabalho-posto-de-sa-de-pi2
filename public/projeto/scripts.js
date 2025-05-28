@@ -1,6 +1,13 @@
-import { medicos } from "./medicos.js"
+async function loadMedicos() {
+    const response = await fetch('/medicos');
+    const medicos = await response.json();
 
-const medicosGrid = document.querySelector('.medicos')
+    for (const medico of medicos) {
+        const card = createMedicoCard(medico);
+        medicosGrid.insertAdjacentHTML('beforeend', card)
+    }
+}
+
 
 function createMedicoCard(medico) {
     return ` 
@@ -22,7 +29,6 @@ function createMedicoCard(medico) {
     `
 }
 
-for (const medico of medicos) {
-    const card = createMedicoCard(medico);
-    medicosGrid.insertAdjacentHTML('beforeend', card)
-}
+const medicosGrid = document.querySelector('.medicos')
+
+loadMedicos();

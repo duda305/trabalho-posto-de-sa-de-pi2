@@ -31,4 +31,12 @@ export const medicos = [
         "horario": "09h - 12h",
         "foto": "https://images.pexels.com/photos/5452201/pexels-photo-5452201.jpeg?auto=compress&cs=tinysrgb&h=350"
    },
+    {
+        "id": "0005",
+        "nome": "Dr. José Silva",
+        "especialidade": "Clínico Geral",
+        "descricao": "Descrição: Especialista que atende diversos problemas de saúde, faz diagnósticos iniciais e acompanha o paciente em cuidados gerais e preventivos",
+        "horario": "08h - 12h",
+        "foto": "https://images.pexels.com/photos/15962798/pexels-photo-15962798.jpeg"
+   },
 ]

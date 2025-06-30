@@ -10,6 +10,7 @@ app.get('/', (req, res) => {
 });
 
 app.get('/medicos', (req, res) => {
+  res.json(medicos.read());
   res.json(medicos);
 });
  

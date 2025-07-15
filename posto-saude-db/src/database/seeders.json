@@ -1,0 +1,66 @@
+{
+  "usuarios": [
+    { "usuario_id": 1, "nome": "Dra. Luiza Costa", "email": "luiza.costa@hospitalpb.com", "senha": "senha123", "data_cadastro": "2025-02-20" },
+    { "usuario_id": 2, "nome": "Dra. Allana Damázio", "email": "allana.damazio@hospitalpb.com", "senha": "senha456", "data_cadastro": "2025-02-21" },
+    { "usuario_id": 3, "nome": "Dra. Maria Almeida", "email": "maria.almeida@hospitalpb.com", "senha": "senha789", "data_cadastro": "2025-02-22" },
+    { "usuario_id": 4, "nome": "Dra. Jayslane Santos", "email": "jayslane.santos@hospitalpb.com", "senha": "senha321", "data_cadastro": "2025-02-23" },
+    { "usuario_id": 5, "nome": "Dr. José Silva", "email": "jose.silva@hospitalpb.com", "senha": "senha654", "data_cadastro": "2025-02-24" },
+    { "usuario_id": 6, "nome": "Ana Pereira", "email": "ana.pereira@gmail.com", "senha": "senha654", "data_cadastro": "2025-02-25" },
+    { "usuario_id": 7, "nome": "João Mendes", "email": "joao.mendes@gmail.com", "senha": "senha654", "data_cadastro": "2025-02-26" }
+  ],
+  "medicos": [
+    { "medico_id": 1, "nome": "Dra. Luiza Costa", "CRM": "CRM-PB123456", "disponibilidade": "Seg-Sex, 08h-12h", "telefone": "83991234567" },
+    { "medico_id": 2, "nome": "Dra. Allana Damázio", "CRM": "CRM-PB654321", "disponibilidade": "Ter-Qui, 08h-14h", "telefone": "83993456789" },
+    { "medico_id": 3, "nome": "Dra. Maria Almeida", "CRM": "CRM-PB112233", "disponibilidade": "Qua-Sáb, 09h-13h", "telefone": "8398765-4321" },
+    { "medico_id": 4, "nome": "Dra. Jayslane Santos", "CRM": "CRM-PB789456", "disponibilidade": "Seg-Qui, 09h-12h", "telefone": "8399876-2345" },
+    { "medico_id": 5, "nome": "Dr. José Silva", "CRM": "CRM-PB987654", "disponibilidade": "Seg-Sáb, 08h-12h", "telefone": "83999887766" }
+  ],
+  "especialidades": [
+    { "especialidade_id": 1, "nome": "Cardiologista" },
+    { "especialidade_id": 2, "nome": "Dermatologista" },
+    { "especialidade_id": 3, "nome": "Oftalmologista" },
+    { "especialidade_id": 4, "nome": "Ginecologista" },
+    { "especialidade_id": 5, "nome": "Clínico Geral" }
+  ],
+  "tem": [
+    { "medico_id": 1, "especialidade_id": 1 },
+    { "medico_id": 2, "especialidade_id": 2 },
+    { "medico_id": 3, "especialidade_id": 3 },
+    { "medico_id": 4, "especialidade_id": 4 },
+    { "medico_id": 5, "especialidade_id": 5 }
+  ],
+  "pacientes": [
+    { "paciente_id": 6, "nome": "Ana Pereira", "telefone": "83991234567", "bairro": "Tambaú", "cidade": "João Pessoa", "endereco": "Rua Infante Dom Henrique, n° 120", "CEP": "58039-150" },
+    { "paciente_id": 7, "nome": "João Mendes", "telefone": "83993456789", "bairro": "Cruz das Armas", "cidade": "João Pessoa", "endereco": "Rua Abel da Silva, n° 84", "CEP": "58085-370" }
+  ],
+  "consultas": [
+    { "consulta_id": 1, "data_consulta": "2025-02-25", "observacao": "Rotina anual", "medico_id": 1, "paciente_id": 6 },
+    { "consulta_id": 2, "data_consulta": "2025-03-10", "observacao": "Dores no peito", "medico_id": 4, "paciente_id": 7 },
+    { "consulta_id": 3, "data_consulta": "2025-03-15", "observacao": "Febre alta", "medico_id": 2, "paciente_id": 6 },
+    { "consulta_id": 4, "data_consulta": "2025-03-20", "observacao": "Dor no joelho", "medico_id": 3, "paciente_id": 7 }
+  ],
+  "medicamentos": [
+    { "medicamento_id": 1, "nome": "Paracetamol", "fabricante": "MedPharma", "data_validade": "2025-11-30" },
+    { "medicamento_id": 2, "nome": "Omeprazol", "fabricante": "BioSaúde", "data_validade": "2026-01-15" },
+    { "medicamento_id": 3, "nome": "Ibuprofeno", "fabricante": "Saúde Pharma", "data_validade": "2025-12-10" }
+  ],
+  "pede": [
+    { "consulta_id": 1, "medicamento_id": 1 },
+    { "consulta_id": 3, "medicamento_id": 2 },
+    { "consulta_id": 4, "medicamento_id": 3 }
+  ],
+  "estoque": [
+    { "estoque_id": 1, "medicamento_id": 1, "quantidade": 50 },
+    { "estoque_id": 2, "medicamento_id": 2, "quantidade": 30 },
+    { "estoque_id": 3, "medicamento_id": 3, "quantidade": 40 }
+  ],
+  "relatorios": [
+    { "relatorio_id": 1, "usuario_id": 1, "tipo_relatorio": "Consulta Médica", "arquivo_relatorio": null },
+    { "relatorio_id": 2, "usuario_id": 2, "tipo_relatorio": "Estoque Medicamentos", "arquivo_relatorio": null }
+  ],
+  "notificacoes": [
+    { "notificacao_id": 1, "usuario_id": 6, "tipo": "Alerta", "mensagens": "Consulta marcada para 25/02", "data_envio": "2025-02-22", "status": "Pendente" },
+    { "notificacao_id": 2, "usuario_id": 4, "tipo": "Aviso", "mensagens": "Medicamento em baixa no estoque", "data_envio": "2025-02-22", "status": "Enviada" },
+    { "notificacao_id": 3, "usuario_id": 7, "tipo": "Alerta", "mensagens": "Consulta marcada com Dra. Maria para 20/03", "data_envio": "2025-02-25", "status": "Pendente" }
+  ]
+}

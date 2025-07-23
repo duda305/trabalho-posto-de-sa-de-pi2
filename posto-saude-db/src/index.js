@@ -1,15 +1,15 @@
 import express from 'express';
-import medicos from './src/models/Medico.js';
-import usuarios from './src/models/Usuario.js';
-import especialidades from './src/models/Especialidade.js';
-import pacientes from './src/models/Paciente.js';
-import consultas from './src/models/Consulta.js';
-import medicamentos from './src/models/Medicamento.js';
-import estoque from './src/models/Estoque.js';
-import relatorios from './src/models/Relatorio.js';
-import notificacoes from './src/models/Notificacoes.js';
-import pede from './src/models/Pede.js';
-import tem from './src/models/Tem.js';
+import medicos from './models/medico.js';
+import usuarios from './models/usuario.js';
+import especialidades from './models/especialidade.js';
+import pacientes from './models/paciente.js';
+import consultas from './models/consulta.js';
+import medicamentos from './models/medicamento.js';
+import estoque from './models/estoque.js';
+import relatorios from './models/relatorio.js';
+import notificacoes from './models/notificacoes.js';
+import pede from './models/pede.js';
+import tem from './models/tem.js';
 
 const app = express();
 app.use(express.json());

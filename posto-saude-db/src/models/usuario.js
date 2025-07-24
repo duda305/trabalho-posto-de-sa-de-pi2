@@ -24,14 +24,14 @@ async function read(field, value) {
     return await db.all(sql, [value]);
   }
 
-  const sql = `SELECT * FROM Usuario`;
+  const sql = 'SELECT * FROM Usuario';
   return await db.all(sql);
 }
 
 async function readById(id) {
   const db = await Database.connect();
 
-  const sql = `SELECT * FROM Usuario WHERE usuario_id = ?`;
+  const sql = 'SELECT * FROM Usuario WHERE usuario_id = ?';
   const result = await db.get(sql, [id]);
 
   if (result) return result;

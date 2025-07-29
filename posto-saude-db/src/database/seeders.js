@@ -1,17 +1,17 @@
 import { resolve } from 'node:path';
 import { readFileSync } from 'node:fs';
 
-import Usuario from './models/usuario.js';
-import Medico from './models/medico.js';
-import Especialidade from './models/especialidade.js';
-import Tem from './models/tem.js';
-import Paciente from './models/paciente.js';
-import Consulta from './models/consulta.js';
-import Medicamento from './models/medicamento.js';
-import Pede from './models/pede.js';
-import Estoque from './models/estoque.js';
-import Relatorio from './models/relatorio.js';
-import Notificacoes from './models/notificacoes.js';
+import Usuario from '../models/usuarios.js';
+import Medico from '../models/medicos.js';
+import Especialidade from '../models/especialidades.js';
+import Tem from '../models/tem.js';
+import Paciente from '../models/pacientes.js';
+import Consulta from '../models/consultas.js';
+import Medicamento from './models/medicamentos.js';
+import Pede from '../models/pede.js';
+import Estoque from '../models/estoque.js';
+import Relatorio from '../models/relatorios.js';
+import Notificacoes from '../models/notificacoes.js';
 
 async function up() {
   const file = resolve('src', 'database', 'seeders.json');

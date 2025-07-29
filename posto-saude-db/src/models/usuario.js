@@ -71,4 +71,3 @@ async function remove(usuario_id) {
 }
 
 export default { create, read, readById, update, remove };
-

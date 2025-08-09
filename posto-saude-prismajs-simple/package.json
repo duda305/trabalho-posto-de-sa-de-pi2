@@ -8,6 +8,9 @@
     "db:reload": "npm run db:drop && npm run db:load",
     "db:drop": "rm src/database/db.sqlite"
   },
+  "prisma":{
+    "seed": "node prisma/seed.js"
+  },
   "dependencies": {
     "cors": "^2.8.5",
     "express": "^4.21.2",

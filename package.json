@@ -1,6 +1,22 @@
 {
+  "name": "VIVER",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js",
+    "db:load": "node src/database/load.js",
+    "db:reload": "npm run db:drop && npm run db:load",
+    "db:drop": "rm src/database/db.sqlite"
+  },
+  "prisma": {
+    "seed": "node prisma/seed.js"
+  },
   "dependencies": {
     "@prisma/client": "^6.13.0",
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "express-async-errors": "^3.1.1",
+    "morgan": "^1.10.0",
     "prisma": "^6.13.0"
   }
 }

@@ -11,4 +11,116 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Usuario {
+  usuario_id    Int             @id
+  nome          String?
+  email         String?
+  senha         String?
+  data_cadastro DateTime?
+
+  relatorios    Relatorio[]
+  notificacoes  Notificacoes[]
+}
+
+model Medico {
+  medico_id       Int        @id
+  CRM             String?    @unique
+  nome            String?
+  disponibilidade String?
+  telefone        String?
+
+  especialidades  Tem[]
+  consultas       Consulta[]
+}
+
+model Especialidade {
+  especialidade_id Int    @id
+  nome             String
+
+  medicos          Tem[]
+}
+
+model Tem {
+  medico_id        Int
+  especialidade_id Int
+
+  medico           Medico         @relation(fields: [medico_id], references: [medico_id])
+  especialidade    Especialidade  @relation(fields: [especialidade_id], references: [especialidade_id])
+
+  @@id([medico_id, especialidade_id])
+}
+
+model Paciente {
+  paciente_id Int     @id
+  nome        String?
+  telefone    String?
+  cidade      String?
+  bairro      String?
+  endereco    String?
+  CEP         String?
+
+  consultas   Consulta[]
+}
+
+model Consulta {
+  consulta_id   Int        @id
+  data_consulta DateTime?
+  observacao    String?
+  medico_id     Int?
+  paciente_id   Int?
+
+  medico        Medico?    @relation(fields: [medico_id], references: [medico_id])
+  paciente      Paciente?  @relation(fields: [paciente_id], references: [paciente_id])
+  medicamentos  Pede[]
+}
+
+model Pede {
+  consulta_id    Int
+  medicamento_id Int
+
+  consulta       Consulta     @relation(fields: [consulta_id], references: [consulta_id])
+  medicamento    Medicamento  @relation(fields: [medicamento_id], references: [medicamento_id])
+
+  @@id([consulta_id, medicamento_id])
+}
+
+model Medicamento {
+  medicamento_id Int       @id
+  nome           String?
+  fabricante     String?
+  data_validade  DateTime?
+
+  pedidos        Pede[]
+  estoques       Estoque[]
+}
+
+model Estoque {
+  estoque_id     Int        @id
+  medicamento_id Int
+  quantidade     Int        @default(0)
+
+  medicamento    Medicamento @relation(fields: [medicamento_id], references: [medicamento_id])
+}
+
+model Relatorio {
+  relatorio_id      Int      @id
+  usuario_id        Int?
+  tipo_relatorio    String?
+  arquivo_relatorio String?
+
+  usuario           Usuario? @relation(fields: [usuario_id], references: [usuario_id])
+}
+
+model Notificacoes {
+  notificacao_id Int      @id
+  usuario_id     Int?
+  tipo           String?
+  mensagens      String?
+  data_envio     DateTime?
+  status         String?
+
+  usuario        Usuario? @relation(fields: [usuario_id], references: [usuario_id])
+}
+
+
 

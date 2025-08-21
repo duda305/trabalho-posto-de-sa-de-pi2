@@ -1,74 +1,74 @@
-import Database from '../database/database.js';
+import prisma from '../database/database.js';
 
 async function create({ relatorio_id, usuario_id, tipo_relatorio, arquivo_relatorio }) {
-  const db = await Database.connect();
-
   if (relatorio_id && usuario_id && tipo_relatorio) {
-    const sql = `
-      INSERT INTO Relatorio (relatorio_id, usuario_id, tipo_relatorio, arquivo_relatorio)
-      VALUES (?, ?, ?, ?)
-    `;
+    const createdRelatorio = await prisma.relatorio.create({
+      data: { relatorio_id, usuario_id, tipo_relatorio, arquivo_relatorio },
+    });
 
-    await db.run(sql, [relatorio_id, usuario_id, tipo_relatorio, arquivo_relatorio]);
-    return await readById(relatorio_id);
+    return createdRelatorio;
   } else {
-    throw new Error('Campos obrigatórios ausentes para criar relatório');
+    throw new Error('Unable to create relatorio');
   }
 }
 
-async function read(field, value) {
-  const db = await Database.connect();
-
-  if (field && value) {
-    const sql = `SELECT * FROM Relatorio WHERE ${field} = ?`;
-    return await db.all(sql, [value]);
+async function read(where) {
+  if (where?.tipo_relatorio) {
+    where.tipo_relatorio = {
+      contains: where.tipo_relatorio,
+    };
   }
 
-  const sql = `SELECT * FROM Relatorio`;
-  return await db.all(sql);
+  const relatorios = await prisma.relatorio.findMany({ where });
+
+  if (relatorios.length === 1 && where) {
+    return relatorios[0];
+  }
+
+  return relatorios;
 }
 
-async function readById(id) {
-  const db = await Database.connect();
+async function readById(relatorio_id) {
+  if (relatorio_id) {
+    const relatorio = await prisma.relatorio.findUnique({
+      where: {
+        relatorio_id,
+      },
+    });
 
-  const sql = `SELECT * FROM Relatorio WHERE relatorio_id = ?`;
-  const result = await db.get(sql, [id]);
-
-  if (result) return result;
-
-  throw new Error('Relatório não encontrado');
+    return relatorio;
+  } else {
+    throw new Error('Unable to find relatorio');
+  }
 }
 
 async function update({ relatorio_id, usuario_id, tipo_relatorio, arquivo_relatorio }) {
-  const db = await Database.connect();
-
   if (relatorio_id && usuario_id && tipo_relatorio) {
-    const sql = `
-      UPDATE Relatorio
-      SET usuario_id = ?, tipo_relatorio = ?, arquivo_relatorio = ?
-      WHERE relatorio_id = ?
-    `;
+    const updatedRelatorio = await prisma.relatorio.update({
+      where: {
+        relatorio_id,
+      },
+      data: { usuario_id, tipo_relatorio, arquivo_relatorio },
+    });
 
-    const { changes } = await db.run(sql, [usuario_id, tipo_relatorio, arquivo_relatorio, relatorio_id]);
-
-    if (changes === 1) return readById(relatorio_id);
-
-    throw new Error('Relatório não encontrado para atualização');
+    return updatedRelatorio;
   } else {
-    throw new Error('Dados incompletos para atualização do relatório');
+    throw new Error('Unable to update relatorio');
   }
 }
 
 async function remove(relatorio_id) {
-  const db = await Database.connect();
+  if (relatorio_id) {
+    await prisma.relatorio.delete({
+      where: {
+        relatorio_id,
+      },
+    });
 
-  const sql = `DELETE FROM Relatorio WHERE relatorio_id = ?`;
-  const { changes } = await db.run(sql, [relatorio_id]);
-
-  if (changes === 1) return true;
-
-  throw new Error('Relatório não encontrado para remoção');
+    return true;
+  } else {
+    throw new Error('Unable to remove relatorio');
+  }
 }
 
 export default { create, read, readById, update, remove };
-

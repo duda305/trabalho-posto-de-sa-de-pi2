@@ -1,54 +1,59 @@
-import Database from '../database/database.js';
+import prisma from '../database/database.js';
 
 async function create({ consulta_id, medicamento_id }) {
-  const db = await Database.connect();
-
   if (consulta_id && medicamento_id) {
-    const sql = `
-      INSERT INTO Pede (consulta_id, medicamento_id)
-      VALUES (?, ?)
-    `;
+    const createdPede = await prisma.pede.create({
+      data: { consulta_id, medicamento_id },
+    });
 
-    await db.run(sql, [consulta_id, medicamento_id]);
-    return { consulta_id, medicamento_id };
+    return createdPede;
   } else {
-    throw new Error('Campos obrigatórios ausentes para criar relação Pede');
+    throw new Error('Unable to create Pede relation');
   }
 }
 
-async function read(field, value) {
-  const db = await Database.connect();
+async function read(where) {
+  const pedes = await prisma.pede.findMany({ where });
 
-  if (field && value) {
-    const sql = `SELECT * FROM Pede WHERE ${field} = ?`;
-    return await db.all(sql, [value]);
+  if (pedes.length === 1 && where) {
+    return pedes[0];
   }
 
-  const sql = `SELECT * FROM Pede`;
-  return await db.all(sql);
+  return pedes;
 }
 
 async function readById({ consulta_id, medicamento_id }) {
-  const db = await Database.connect();
+  if (consulta_id && medicamento_id) {
+    const pede = await prisma.pede.findUnique({
+      where: {
+        consulta_id_medicamento_id: {
+          consulta_id,
+          medicamento_id,
+        },
+      },
+    });
 
-  const sql = `SELECT * FROM Pede WHERE consulta_id = ? AND medicamento_id = ?`;
-  const result = await db.get(sql, [consulta_id, medicamento_id]);
-
-  if (result) return result;
-
-  throw new Error('Relação Pede não encontrada');
+    return pede;
+  } else {
+    throw new Error('Unable to find Pede relation');
+  }
 }
 
 async function remove({ consulta_id, medicamento_id }) {
-  const db = await Database.connect();
+  if (consulta_id && medicamento_id) {
+    await prisma.pede.delete({
+      where: {
+        consulta_id_medicamento_id: {
+          consulta_id,
+          medicamento_id,
+        },
+      },
+    });
 
-  const sql = `DELETE FROM Pede WHERE consulta_id = ? AND medicamento_id = ?`;
-  const { changes } = await db.run(sql, [consulta_id, medicamento_id]);
-
-  if (changes === 1) return true;
-
-  throw new Error('Relação Pede não encontrada para remoção');
+    return true;
+  } else {
+    throw new Error('Unable to remove Pede relation');
+  }
 }
 
 export default { create, read, readById, remove };
-

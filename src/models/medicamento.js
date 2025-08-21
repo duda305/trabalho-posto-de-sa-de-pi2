@@ -1,73 +1,75 @@
-import Database from '../database/database.js';
+import prisma from '../database/database.js';
 
 async function create({ medicamento_id, nome, fabricante, data_validade }) {
-  const db = await Database.connect();
-
   if (medicamento_id && nome && fabricante && data_validade) {
-    const sql = `
-      INSERT INTO Medicamento (medicamento_id, nome, fabricante, data_validade)
-      VALUES (?, ?, ?, ?)
-    `;
+    const createdMedicamento = await prisma.medicamento.create({
+      data: {
+        medicamento_id,
+        nome,
+        fabricante,
+        data_validade: new Date(data_validade),
+      },
+    });
 
-    const { lastID } = await db.run(sql, [medicamento_id, nome, fabricante, data_validade]);
-    return await readById(medicamento_id);
+    return createdMedicamento;
   } else {
     throw new Error('Campos obrigatórios ausentes para criar medicamento');
   }
 }
 
-async function read(field, value) {
-  const db = await Database.connect();
+async function read(where) {
+  // Se receber filtro, aplica; se não, retorna todos os medicamentos
+  const medicamentos = await prisma.medicamento.findMany({
+    where: where || {},
+  });
 
-  if (field && value) {
-    const sql = `SELECT * FROM Medicamento WHERE ${field} = ?`;
-    return await db.all(sql, [value]);
+  if (medicamentos.length === 1 && where) {
+    return medicamentos[0];
   }
 
-  const sql = `SELECT * FROM Medicamento`;
-  return await db.all(sql);
+  return medicamentos;
 }
 
-async function readById(id) {
-  const db = await Database.connect();
+async function readById(medicamento_id) {
+  if (medicamento_id) {
+    const medicamento = await prisma.medicamento.findUnique({
+      where: { medicamento_id },
+    });
 
-  const sql = `SELECT * FROM Medicamento WHERE medicamento_id = ?`;
-  const result = await db.get(sql, [id]);
-
-  if (result) return result;
-
-  throw new Error('Medicamento não encontrado');
+    if (!medicamento) throw new Error('Medicamento não encontrado');
+    return medicamento;
+  } else {
+    throw new Error('ID do medicamento é obrigatório');
+  }
 }
 
 async function update({ medicamento_id, nome, fabricante, data_validade }) {
-  const db = await Database.connect();
-
   if (medicamento_id && nome && fabricante && data_validade) {
-    const sql = `
-      UPDATE Medicamento
-      SET nome = ?, fabricante = ?, data_validade = ?
-      WHERE medicamento_id = ?
-    `;
+    const updatedMedicamento = await prisma.medicamento.update({
+      where: { medicamento_id },
+      data: {
+        nome,
+        fabricante,
+        data_validade: new Date(data_validade),
+      },
+    });
 
-    const { changes } = await db.run(sql, [nome, fabricante, data_validade, medicamento_id]);
-
-    if (changes === 1) return readById(medicamento_id);
-
-    throw new Error('Medicamento não encontrado para atualização');
+    return updatedMedicamento;
   } else {
     throw new Error('Dados incompletos para atualização do medicamento');
   }
 }
 
 async function remove(medicamento_id) {
-  const db = await Database.connect();
+  if (medicamento_id) {
+    await prisma.medicamento.delete({
+      where: { medicamento_id },
+    });
 
-  const sql = `DELETE FROM Medicamento WHERE medicamento_id = ?`;
-  const { changes } = await db.run(sql, [medicamento_id]);
-
-  if (changes === 1) return true;
-
-  throw new Error('Medicamento não encontrado para remoção');
+    return true;
+  } else {
+    throw new Error('ID do medicamento é obrigatório para remoção');
+  }
 }
 
 export default { create, read, readById, update, remove };

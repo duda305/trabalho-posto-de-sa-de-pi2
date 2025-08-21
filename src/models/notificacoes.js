@@ -1,74 +1,78 @@
-import Database from '../database/database.js';
+import prisma from '../database/database.js';
 
 async function create({ notificacao_id, usuario_id, tipo, mensagens, data_envio, status }) {
-  const db = await Database.connect();
-
   if (notificacao_id && usuario_id && tipo && mensagens && data_envio && status) {
-    const sql = `
-      INSERT INTO Notificacoes (notificacao_id, usuario_id, tipo, mensagens, data_envio, status)
-      VALUES (?, ?, ?, ?, ?, ?)
-    `;
+    const createdNotificacao = await prisma.notificacoes.create({
+      data: {
+        notificacao_id,
+        usuario_id,
+        tipo,
+        mensagens,
+        data_envio,
+        status,
+      },
+    });
 
-    await db.run(sql, [notificacao_id, usuario_id, tipo, mensagens, data_envio, status]);
-    return await readById(notificacao_id);
+    return createdNotificacao;
   } else {
     throw new Error('Campos obrigatórios ausentes para criar notificação');
   }
 }
 
-async function read(field, value) {
-  const db = await Database.connect();
+async function read(where) {
+  const notificacoes = await prisma.notificacoes.findMany({
+    where: where || {},
+  });
 
-  if (field && value) {
-    const sql = `SELECT * FROM Notificacoes WHERE ${field} = ?`;
-    return await db.all(sql, [value]);
+  if (notificacoes.length === 1 && where) {
+    return notificacoes[0];
   }
 
-  const sql = `SELECT * FROM Notificacoes`;
-  return await db.all(sql);
+  return notificacoes;
 }
 
-async function readById(id) {
-  const db = await Database.connect();
+async function readById(notificacao_id) {
+  if (notificacao_id) {
+    const notificacao = await prisma.notificacoes.findUnique({
+      where: { notificacao_id },
+    });
 
-  const sql = `SELECT * FROM Notificacoes WHERE notificacao_id = ?`;
-  const result = await db.get(sql, [id]);
-
-  if (result) return result;
-
-  throw new Error('Notificação não encontrada');
+    if (!notificacao) throw new Error('Notificação não encontrada');
+    return notificacao;
+  } else {
+    throw new Error('ID da notificação é obrigatório');
+  }
 }
 
 async function update({ notificacao_id, usuario_id, tipo, mensagens, data_envio, status }) {
-  const db = await Database.connect();
-
   if (notificacao_id && usuario_id && tipo && mensagens && data_envio && status) {
-    const sql = `
-      UPDATE Notificacoes
-      SET usuario_id = ?, tipo = ?, mensagens = ?, data_envio = ?, status = ?
-      WHERE notificacao_id = ?
-    `;
+    const updatedNotificacao = await prisma.notificacoes.update({
+      where: { notificacao_id },
+      data: {
+        usuario_id,
+        tipo,
+        mensagens,
+        data_envio,
+        status,
+      },
+    });
 
-    const { changes } = await db.run(sql, [usuario_id, tipo, mensagens, data_envio, status, notificacao_id]);
-
-    if (changes === 1) return readById(notificacao_id);
-
-    throw new Error('Notificação não encontrada para atualização');
+    return updatedNotificacao;
   } else {
     throw new Error('Dados incompletos para atualização da notificação');
   }
 }
 
 async function remove(notificacao_id) {
-  const db = await Database.connect();
+  if (notificacao_id) {
+    await prisma.notificacoes.delete({
+      where: { notificacao_id },
+    });
 
-  const sql = `DELETE FROM Notificacoes WHERE notificacao_id = ?`;
-  const { changes } = await db.run(sql, [notificacao_id]);
-
-  if (changes === 1) return true;
-
-  throw new Error('Notificação não encontrada para remoção');
+    return true;
+  } else {
+    throw new Error('ID da notificação é obrigatório para remoção');
+  }
 }
 
 export default { create, read, readById, update, remove };
-

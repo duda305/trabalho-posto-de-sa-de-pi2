@@ -1,74 +1,74 @@
-import Database from '../database/database.js';
+import prisma from '../database/database.js';
 
 async function create({ paciente_id, nome, telefone, bairro, cidade, endereco, CEP }) {
-  const db = await Database.connect();
-
   if (paciente_id && nome && telefone && bairro && cidade && endereco && CEP) {
-    const sql = `
-      INSERT INTO Paciente (paciente_id, nome, telefone, bairro, cidade, endereco, CEP)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
-    `;
+    const createdPaciente = await prisma.paciente.create({
+      data: { paciente_id, nome, telefone, bairro, cidade, endereco, CEP },
+    });
 
-    const { lastID } = await db.run(sql, [paciente_id, nome, telefone, bairro, cidade, endereco, CEP]);
-    return await readById(paciente_id);
+    return createdPaciente;
   } else {
-    throw new Error('Campos obrigatórios ausentes para criar paciente');
+    throw new Error('Unable to create paciente');
   }
 }
 
-async function read(field, value) {
-  const db = await Database.connect();
-
-  if (field && value) {
-    const sql = `SELECT * FROM Paciente WHERE ${field} = ?`;
-    return await db.all(sql, [value]);
+async function read(where) {
+  if (where?.nome) {
+    where.nome = {
+      contains: where.nome,
+    };
   }
 
-  const sql = `SELECT * FROM Paciente`;
-  return await db.all(sql);
+  const pacientes = await prisma.paciente.findMany({ where });
+
+  if (pacientes.length === 1 && where) {
+    return pacientes[0];
+  }
+
+  return pacientes;
 }
 
-async function readById(id) {
-  const db = await Database.connect();
+async function readById(paciente_id) {
+  if (paciente_id) {
+    const paciente = await prisma.paciente.findUnique({
+      where: {
+        paciente_id,
+      },
+    });
 
-  const sql = `SELECT * FROM Paciente WHERE paciente_id = ?`;
-  const result = await db.get(sql, [id]);
-
-  if (result) return result;
-
-  throw new Error('Paciente não encontrado');
+    return paciente;
+  } else {
+    throw new Error('Unable to find paciente');
+  }
 }
 
 async function update({ paciente_id, nome, telefone, bairro, cidade, endereco, CEP }) {
-  const db = await Database.connect();
-
   if (paciente_id && nome && telefone && bairro && cidade && endereco && CEP) {
-    const sql = `
-      UPDATE Paciente
-      SET nome = ?, telefone = ?, bairro = ?, cidade = ?, endereco = ?, CEP = ?
-      WHERE paciente_id = ?
-    `;
+    const updatedPaciente = await prisma.paciente.update({
+      where: {
+        paciente_id,
+      },
+      data: { nome, telefone, bairro, cidade, endereco, CEP },
+    });
 
-    const { changes } = await db.run(sql, [nome, telefone, bairro, cidade, endereco, CEP, paciente_id]);
-
-    if (changes === 1) return readById(paciente_id);
-
-    throw new Error('Paciente não encontrado para atualização');
+    return updatedPaciente;
   } else {
-    throw new Error('Dados incompletos para atualização do paciente');
+    throw new Error('Unable to update paciente');
   }
 }
 
 async function remove(paciente_id) {
-  const db = await Database.connect();
+  if (paciente_id) {
+    await prisma.paciente.delete({
+      where: {
+        paciente_id,
+      },
+    });
 
-  const sql = `DELETE FROM Paciente WHERE paciente_id = ?`;
-  const { changes } = await db.run(sql, [paciente_id]);
-
-  if (changes === 1) return true;
-
-  throw new Error('Paciente não encontrado para remoção');
+    return true;
+  } else {
+    throw new Error('Unable to remove paciente');
+  }
 }
 
 export default { create, read, readById, update, remove };
-

@@ -1,74 +1,78 @@
-import Database from '../database/database.js';
+import prisma from '../database/database.js';
 
 async function create({ consulta_id, data_consulta, observacao, medico_id, paciente_id }) {
-  const db = await Database.connect();
-
   if (consulta_id && data_consulta && medico_id && paciente_id) {
-    const sql = `
-      INSERT INTO Consulta (consulta_id, data_consulta, observacao, medico_id, paciente_id)
-      VALUES (?, ?, ?, ?, ?)
-    `;
+    const createdConsulta = await prisma.consulta.create({
+      data: {
+        consulta_id,
+        data_consulta,
+        observacao,
+        medico_id,
+        paciente_id,
+      },
+    });
 
-    const { lastID } = await db.run(sql, [consulta_id, data_consulta, observacao, medico_id, paciente_id]);
-    return await readById(consulta_id);
+    return createdConsulta;
   } else {
     throw new Error('Campos obrigatórios ausentes para criar consulta');
   }
 }
 
-async function read(field, value) {
-  const db = await Database.connect();
+async function read(where) {
+  // Caso a busca tenha um campo específico, aplica o filtro
+  const consultas = await prisma.consulta.findMany({
+    where: where || {},
+  });
 
-  if (field && value) {
-    const sql = `SELECT * FROM Consulta WHERE ${field} = ?`;
-    return await db.all(sql, [value]);
+  // Se só houver uma consulta encontrada e tiver filtro, retorna um único objeto
+  if (consultas.length === 1 && where) {
+    return consultas[0];
   }
 
-  const sql = `SELECT * FROM Consulta`;
-  return await db.all(sql);
+  return consultas;
 }
 
 async function readById(id) {
-  const db = await Database.connect();
+  if (id) {
+    const consulta = await prisma.consulta.findUnique({
+      where: { consulta_id: id },
+    });
 
-  const sql = `SELECT * FROM Consulta WHERE consulta_id = ?`;
-  const result = await db.get(sql, [id]);
-
-  if (result) return result;
-
-  throw new Error('Consulta não encontrada');
+    if (!consulta) throw new Error('Consulta não encontrada');
+    return consulta;
+  } else {
+    throw new Error('ID da consulta é obrigatório');
+  }
 }
 
 async function update({ consulta_id, data_consulta, observacao, medico_id, paciente_id }) {
-  const db = await Database.connect();
-
   if (consulta_id && data_consulta && medico_id && paciente_id) {
-    const sql = `
-      UPDATE Consulta
-      SET data_consulta = ?, observacao = ?, medico_id = ?, paciente_id = ?
-      WHERE consulta_id = ?
-    `;
+    const updatedConsulta = await prisma.consulta.update({
+      where: { consulta_id },
+      data: {
+        data_consulta,
+        observacao,
+        medico_id,
+        paciente_id,
+      },
+    });
 
-    const { changes } = await db.run(sql, [data_consulta, observacao, medico_id, paciente_id, consulta_id]);
-
-    if (changes === 1) return readById(consulta_id);
-
-    throw new Error('Consulta não encontrada para atualização');
+    return updatedConsulta;
   } else {
     throw new Error('Dados incompletos para atualização da consulta');
   }
 }
 
 async function remove(consulta_id) {
-  const db = await Database.connect();
+  if (consulta_id) {
+    await prisma.consulta.delete({
+      where: { consulta_id },
+    });
 
-  const sql = `DELETE FROM Consulta WHERE consulta_id = ?`;
-  const { changes } = await db.run(sql, [consulta_id]);
-
-  if (changes === 1) return true;
-
-  throw new Error('Consulta não encontrada para remoção');
+    return true;
+  } else {
+    throw new Error('ID da consulta é obrigatório para remoção');
+  }
 }
 
 export default { create, read, readById, update, remove };
-

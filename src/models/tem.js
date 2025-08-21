@@ -1,54 +1,59 @@
-import Database from '../database/database.js';
+import prisma from '../database/database.js';
 
 async function create({ medico_id, especialidade_id }) {
-  const db = await Database.connect();
-
   if (medico_id && especialidade_id) {
-    const sql = `
-      INSERT INTO Tem (medico_id, especialidade_id)
-      VALUES (?, ?)
-    `;
+    const createdTem = await prisma.tem.create({
+      data: { medico_id, especialidade_id },
+    });
 
-    const { lastID } = await db.run(sql, [medico_id, especialidade_id]);
-    return { medico_id, especialidade_id };
+    return createdTem;
   } else {
-    throw new Error('Campos obrigatórios ausentes para criar relação Tem');
+    throw new Error('Unable to create Tem relation');
   }
 }
 
-async function read(field, value) {
-  const db = await Database.connect();
+async function read(where) {
+  const relacoes = await prisma.tem.findMany({ where });
 
-  if (field && value) {
-    const sql = `SELECT * FROM Tem WHERE ${field} = ?`;
-    return await db.all(sql, [value]);
+  if (relacoes.length === 1 && where) {
+    return relacoes[0];
   }
 
-  const sql = `SELECT * FROM Tem`;
-  return await db.all(sql);
+  return relacoes;
 }
 
 async function readById({ medico_id, especialidade_id }) {
-  const db = await Database.connect();
+  if (medico_id && especialidade_id) {
+    const tem = await prisma.tem.findUnique({
+      where: {
+        medico_id_especialidade_id: {
+          medico_id,
+          especialidade_id,
+        },
+      },
+    });
 
-  const sql = `SELECT * FROM Tem WHERE medico_id = ? AND especialidade_id = ?`;
-  const result = await db.get(sql, [medico_id, especialidade_id]);
-
-  if (result) return result;
-
-  throw new Error('Relação Tem não encontrada');
+    return tem;
+  } else {
+    throw new Error('Unable to find Tem relation');
+  }
 }
 
 async function remove({ medico_id, especialidade_id }) {
-  const db = await Database.connect();
+  if (medico_id && especialidade_id) {
+    await prisma.tem.delete({
+      where: {
+        medico_id_especialidade_id: {
+          medico_id,
+          especialidade_id,
+        },
+      },
+    });
 
-  const sql = `DELETE FROM Tem WHERE medico_id = ? AND especialidade_id = ?`;
-  const { changes } = await db.run(sql, [medico_id, especialidade_id]);
-
-  if (changes === 1) return true;
-
-  throw new Error('Relação Tem não encontrada para remoção');
+    return true;
+  } else {
+    throw new Error('Unable to remove Tem relation');
+  }
 }
 
 export default { create, read, readById, remove };
-

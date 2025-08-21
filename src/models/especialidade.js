@@ -1,73 +1,70 @@
-import Database from '../database/database.js';
+import prisma from '../database/database.js';
 
 async function create({ especialidade_id, nome }) {
-  const db = await Database.connect();
-
   if (especialidade_id && nome) {
-    const sql = `
-      INSERT INTO Especialidade (especialidade_id, nome)
-      VALUES (?, ?)
-    `;
+    const createdEspecialidade = await prisma.especialidade.create({
+      data: {
+        especialidade_id,
+        nome,
+      },
+    });
 
-    const { lastID } = await db.run(sql, [especialidade_id, nome]);
-    return await readById(especialidade_id);
+    return createdEspecialidade;
   } else {
     throw new Error('Campos obrigatórios ausentes para criar especialidade');
   }
 }
 
-async function read(field, value) {
-  const db = await Database.connect();
+async function read(where) {
+  // Se um filtro for passado, aplica o where, caso contrário busca tudo
+  const especialidades = await prisma.especialidade.findMany({
+    where: where || {},
+  });
 
-  if (field && value) {
-    const sql = `SELECT * FROM Especialidade WHERE ${field} = ?`;
-    return await db.all(sql, [value]);
+  // Se só encontrar uma especialidade e existir filtro, retorna um único objeto
+  if (especialidades.length === 1 && where) {
+    return especialidades[0];
   }
 
-  const sql = `SELECT * FROM Especialidade`;
-  return await db.all(sql);
+  return especialidades;
 }
 
 async function readById(id) {
-  const db = await Database.connect();
+  if (id) {
+    const especialidade = await prisma.especialidade.findUnique({
+      where: { especialidade_id: id },
+    });
 
-  const sql = `SELECT * FROM Especialidade WHERE especialidade_id = ?`;
-  const result = await db.get(sql, [id]);
-
-  if (result) return result;
-
-  throw new Error('Especialidade não encontrada');
+    if (!especialidade) throw new Error('Especialidade não encontrada');
+    return especialidade;
+  } else {
+    throw new Error('ID da especialidade é obrigatório');
+  }
 }
 
 async function update({ especialidade_id, nome }) {
-  const db = await Database.connect();
-
   if (especialidade_id && nome) {
-    const sql = `
-      UPDATE Especialidade
-      SET nome = ?
-      WHERE especialidade_id = ?
-    `;
+    const updatedEspecialidade = await prisma.especialidade.update({
+      where: { especialidade_id },
+      data: { nome },
+    });
 
-    const { changes } = await db.run(sql, [nome, especialidade_id]);
-
-    if (changes === 1) return readById(especialidade_id);
-
-    throw new Error('Especialidade não encontrada para atualização');
+    return updatedEspecialidade;
   } else {
     throw new Error('Dados incompletos para atualização da especialidade');
   }
 }
 
 async function remove(especialidade_id) {
-  const db = await Database.connect();
+  if (especialidade_id) {
+    await prisma.especialidade.delete({
+      where: { especialidade_id },
+    });
 
-  const sql = `DELETE FROM Especialidade WHERE especialidade_id = ?`;
-  const { changes } = await db.run(sql, [especialidade_id]);
-
-  if (changes === 1) return true;
-
-  throw new Error('Especialidade não encontrada para remoção');
+    return true;
+  } else {
+    throw new Error('ID da especialidade é obrigatório para remoção');
+  }
 }
 
 export default { create, read, readById, update, remove };

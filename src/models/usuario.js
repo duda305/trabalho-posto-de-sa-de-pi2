@@ -1,73 +1,74 @@
-import Database from '../database/database.js';
+import prisma from '../database/database.js';
 
 async function create({ usuario_id, nome, email, senha, data_cadastro }) {
-  const db = await Database.connect();
-
   if (nome && email && senha && data_cadastro) {
-    const sql = `
-      INSERT INTO Usuario (usuario_id, nome, email, senha, data_cadastro)
-      VALUES (?, ?, ?, ?, ?)
-    `;
+    const createdUsuario = await prisma.usuario.create({
+      data: { usuario_id, nome, email, senha, data_cadastro },
+    });
 
-    const { lastID } = await db.run(sql, [usuario_id, nome, email, senha, data_cadastro]);
-    return await readById(usuario_id);
+    return createdUsuario;
   } else {
-    throw new Error('Campos obrigatórios ausentes para criar usuario');
+    throw new Error('Unable to create usuario');
   }
 }
 
-async function read(field, value) {
-  const db = await Database.connect();
-
-  if (field && value) {
-    const sql = `SELECT * FROM Usuario WHERE ${field} = ?`;
-    return await db.all(sql, [value]);
+async function read(where) {
+  if (where?.nome) {
+    where.nome = {
+      contains: where.nome,
+    };
   }
 
-  const sql = 'SELECT * FROM Usuario';
-  return await db.all(sql);
+  const usuarios = await prisma.usuario.findMany({ where });
+
+  if (usuarios.length === 1 && where) {
+    return usuarios[0];
+  }
+
+  return usuarios;
 }
 
-async function readById(id) {
-  const db = await Database.connect();
+async function readById(usuario_id) {
+  if (usuario_id) {
+    const usuario = await prisma.usuario.findUnique({
+      where: {
+        usuario_id,
+      },
+    });
 
-  const sql = 'SELECT * FROM Usuario WHERE usuario_id = ?';
-  const result = await db.get(sql, [id]);
-
-  if (result) return result;
-
-  throw new Error('Usuário não encontrado');
+    return usuario;
+  } else {
+    throw new Error('Unable to find usuario');
+  }
 }
 
 async function update({ usuario_id, nome, email, senha, data_cadastro }) {
-  const db = await Database.connect();
+  if (usuario_id && nome && email && senha && data_cadastro) {
+    const updatedUsuario = await prisma.usuario.update({
+      where: {
+        usuario_id,
+      },
+      data: { nome, email, senha, data_cadastro },
+    });
 
-  if (nome && email && senha && data_cadastro && usuario_id) {
-    const sql = `
-      UPDATE Usuario
-      SET nome = ?, email = ?, senha = ?, data_cadastro = ?
-      WHERE usuario_id = ?
-    `;
-
-    const { changes } = await db.run(sql, [nome, email, senha, data_cadastro, usuario_id]);
-
-    if (changes === 1) return readById(usuario_id);
-
-    throw new Error('Usuário não encontrado para atualização');
+    return updatedUsuario;
   } else {
-    throw new Error('Dados incompletos para atualização do usuário');
+    throw new Error('Unable to update usuario');
   }
 }
 
 async function remove(usuario_id) {
-  const db = await Database.connect();
+  if (usuario_id) {
+    await prisma.usuario.delete({
+      where: {
+        usuario_id,
+      },
+    });
 
-  const sql = `DELETE FROM Usuario WHERE usuario_id = ?`;
-  const { changes } = await db.run(sql, [usuario_id]);
-
-  if (changes === 1) return true;
-
-  throw new Error('Usuário não encontrado para remoção');
+    return true;
+  } else {
+    throw new Error('Unable to remove usuario');
+  }
 }
 
 export default { create, read, readById, update, remove };

@@ -1,73 +1,74 @@
-import Database from '../database/database.js';
+import prisma from '../database/database.js';
 
 async function create({ estoque_id, medicamento_id, quantidade }) {
-  const db = await Database.connect();
-
   if (estoque_id && medicamento_id && quantidade >= 0) {
-    const sql = `
-      INSERT INTO Estoque (estoque_id, medicamento_id, quantidade)
-      VALUES (?, ?, ?)
-    `;
+    const createdEstoque = await prisma.estoque.create({
+      data: {
+        estoque_id,
+        medicamento_id,
+        quantidade,
+      },
+    });
 
-    await db.run(sql, [estoque_id, medicamento_id, quantidade]);
-    return await readById(estoque_id);
+    return createdEstoque;
   } else {
     throw new Error('Campos obrigatórios ausentes ou inválidos para criar estoque');
   }
 }
 
-async function read(field, value) {
-  const db = await Database.connect();
+async function read(where) {
+  // Se um filtro for passado, aplica o where; caso contrário, busca todos os registros
+  const estoques = await prisma.estoque.findMany({
+    where: where || {},
+  });
 
-  if (field && value) {
-    const sql = `SELECT * FROM Estoque WHERE ${field} = ?`;
-    return await db.all(sql, [value]);
+  // Se só encontrar um e houver filtro, retorna apenas um objeto
+  if (estoques.length === 1 && where) {
+    return estoques[0];
   }
 
-  const sql = `SELECT * FROM Estoque`;
-  return await db.all(sql);
+  return estoques;
 }
 
 async function readById(estoque_id) {
-  const db = await Database.connect();
+  if (estoque_id) {
+    const estoque = await prisma.estoque.findUnique({
+      where: { estoque_id },
+    });
 
-  const sql = `SELECT * FROM Estoque WHERE estoque_id = ?`;
-  const result = await db.get(sql, [estoque_id]);
-
-  if (result) return result;
-
-  throw new Error('Registro de estoque não encontrado');
+    if (!estoque) throw new Error('Registro de estoque não encontrado');
+    return estoque;
+  } else {
+    throw new Error('ID do estoque é obrigatório');
+  }
 }
 
 async function update({ estoque_id, medicamento_id, quantidade }) {
-  const db = await Database.connect();
-
   if (estoque_id && medicamento_id && quantidade >= 0) {
-    const sql = `
-      UPDATE Estoque
-      SET medicamento_id = ?, quantidade = ?
-      WHERE estoque_id = ?
-    `;
+    const updatedEstoque = await prisma.estoque.update({
+      where: { estoque_id },
+      data: {
+        medicamento_id,
+        quantidade,
+      },
+    });
 
-    const { changes } = await db.run(sql, [medicamento_id, quantidade, estoque_id]);
-
-    if (changes === 1) return readById(estoque_id);
-
-    throw new Error('Estoque não encontrado para atualização');
+    return updatedEstoque;
   } else {
     throw new Error('Dados incompletos ou inválidos para atualização do estoque');
   }
 }
 
 async function remove(estoque_id) {
-  const db = await Database.connect();
+  if (estoque_id) {
+    await prisma.estoque.delete({
+      where: { estoque_id },
+    });
 
-  const sql = `DELETE FROM Estoque WHERE estoque_id = ?`;
-  const { changes } = await db.run(sql, [estoque_id]);
-
-  if (changes === 1) return true;
-
-  throw new Error('Estoque não encontrado para remoção');
+    return true;
+  } else {
+    throw new Error('ID do estoque é obrigatório para remoção');
+  }
 }
 
 export default { create, read, readById, update, remove };

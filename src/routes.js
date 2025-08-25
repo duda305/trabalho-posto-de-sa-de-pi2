@@ -1,16 +1,16 @@
 import express from 'express';
 
-import Usuario from '../models/usuario.js';
-import Medico from '../models/medico.js';
-import Especialidade from '../models/especialidade.js';
-import Tem from '../models/Tem.js';
-import Paciente from '../models/pacientesaciente.js';
-import Consulta from '../models/consulta.js';
-import Medicamento from '../models/medicamento.js';
-import Pede from '../models/pede.js';
-import Estoque from '../models/estoque.js';
-import Relatorio from '../models/relatorio.js';
-import Notificacoes from '../models/notificacoes.js';
+import Usuario from './models/usuario.js';
+import Medico from './models/medico.js';
+import Especialidade from './models/especialidade.js';
+import Tem from './models/tem.js';
+import Paciente from './models/paciente.js';
+import Consulta from './models/consulta.js';
+import Medicamento from './models/medicamento.js';
+import Pede from './models/pede.js';
+import Estoque from './models/estoque.js';
+import Relatorio from './models/relatorio.js';
+import Notificacoes from './models/notificacoes.js';
 
 const router = express.Router();
 

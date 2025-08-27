@@ -1,19 +1,29 @@
 import express from 'express';
-import apiRoutes from './routes.js';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+import router from './routes.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const app = express();
 
+// Middleware para JSON
 app.use(express.json());
-app.use(express.static('public'));
 
+// Servir arquivos estáticos da pasta public
+app.use(express.static(path.join(__dirname, '../public')));
+
+// Redirecionar para index.html na raiz
 app.get('/', (req, res) => {
-  res.send('API do Posto de Saúde em funcionamento!');
+  res.sendFile(path.join(__dirname, '../public/index.html'));
 });
 
-// Usa todas as rotas definidas no arquivo apiRoutes.js
-app.use('/api', apiRoutes);
+// Suas rotas da API
+app.use('/api', router);
 
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Servidor rodando em http://localhost:${PORT}`);
 });

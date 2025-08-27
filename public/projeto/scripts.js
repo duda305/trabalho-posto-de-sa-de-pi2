@@ -1,13 +1,13 @@
-async function loadMedicos() {
-    const response = await fetch('/medicos');
-    const medicos = await response.json();
+import { medicos } from './medicos.js';
 
+function loadMedicos() {
+    const medicosGrid = document.querySelector('.medicos');
+    
     for (const medico of medicos) {
         const card = createMedicoCard(medico);
-        medicosGrid.insertAdjacentHTML('beforeend', card)
+        medicosGrid.insertAdjacentHTML('beforeend', card);
     }
 }
-
 
 function createMedicoCard(medico) {
     return ` 
@@ -26,9 +26,7 @@ function createMedicoCard(medico) {
                 </div>
             </div>
         </div>
-    `
+    `;
 }
-
-const medicosGrid = document.querySelector('.medicos')
 
 loadMedicos();

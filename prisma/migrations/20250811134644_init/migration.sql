@@ -1,5 +1,5 @@
 -- CreateTable
-CREATE TABLE "Usuario" (
+CREATE TABLE "usuario" (
     "usuario_id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     "nome" TEXT,
     "email" TEXT,
@@ -8,7 +8,7 @@ CREATE TABLE "Usuario" (
 );
 
 -- CreateTable
-CREATE TABLE "Medico" (
+CREATE TABLE "medico" (
     "medico_id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     "CRM" TEXT,
     "nome" TEXT,
@@ -17,13 +17,13 @@ CREATE TABLE "Medico" (
 );
 
 -- CreateTable
-CREATE TABLE "Especialidade" (
+CREATE TABLE "especialidade" (
     "especialidade_id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     "nome" TEXT NOT NULL
 );
 
 -- CreateTable
-CREATE TABLE "Tem" (
+CREATE TABLE "tem" (
     "medico_id" INTEGER NOT NULL,
     "especialidade_id" INTEGER NOT NULL,
 
@@ -33,7 +33,7 @@ CREATE TABLE "Tem" (
 );
 
 -- CreateTable
-CREATE TABLE "Paciente" (
+CREATE TABLE "paciente" (
     "paciente_id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     "nome" TEXT,
     "telefone" TEXT,
@@ -44,28 +44,28 @@ CREATE TABLE "Paciente" (
 );
 
 -- CreateTable
-CREATE TABLE "Consulta" (
+CREATE TABLE "consulta" (
     "consulta_id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     "data_consulta" DATETIME,
     "observacao" TEXT,
     "medico_id" INTEGER,
     "paciente_id" INTEGER,
-    CONSTRAINT "Consulta_medico_id_fkey" FOREIGN KEY ("medico_id") REFERENCES "Medico" ("medico_id") ON DELETE SET NULL ON UPDATE CASCADE,
-    CONSTRAINT "Consulta_paciente_id_fkey" FOREIGN KEY ("paciente_id") REFERENCES "Paciente" ("paciente_id") ON DELETE SET NULL ON UPDATE CASCADE
+    CONSTRAINT "consulta_medico_id_fkey" FOREIGN KEY ("medico_id") REFERENCES "medico" ("medico_id") ON DELETE SET NULL ON UPDATE CASCADE,
+    CONSTRAINT "consulta_paciente_id_fkey" FOREIGN KEY ("paciente_id") REFERENCES "paciente" ("paciente_id") ON DELETE SET NULL ON UPDATE CASCADE
 );
 
 -- CreateTable
-CREATE TABLE "Pede" (
+CREATE TABLE "pede" (
     "consulta_id" INTEGER NOT NULL,
     "medicamento_id" INTEGER NOT NULL,
 
     PRIMARY KEY ("consulta_id", "medicamento_id"),
-    CONSTRAINT "Pede_consulta_id_fkey" FOREIGN KEY ("consulta_id") REFERENCES "Consulta" ("consulta_id") ON DELETE RESTRICT ON UPDATE CASCADE,
-    CONSTRAINT "Pede_medicamento_id_fkey" FOREIGN KEY ("medicamento_id") REFERENCES "Medicamento" ("medicamento_id") ON DELETE RESTRICT ON UPDATE CASCADE
+    CONSTRAINT "pede_consulta_id_fkey" FOREIGN KEY ("consulta_id") REFERENCES "consulta" ("consulta_id") ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT "pede_medicamento_id_fkey" FOREIGN KEY ("medicamento_id") REFERENCES "medicamento" ("medicamento_id") ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
 -- CreateTable
-CREATE TABLE "Medicamento" (
+CREATE TABLE "medicamento" (
     "medicamento_id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     "nome" TEXT,
     "fabricante" TEXT,
@@ -73,32 +73,32 @@ CREATE TABLE "Medicamento" (
 );
 
 -- CreateTable
-CREATE TABLE "Estoque" (
+CREATE TABLE "estoque" (
     "estoque_id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     "medicamento_id" INTEGER NOT NULL,
     "quantidade" INTEGER NOT NULL DEFAULT 0,
-    CONSTRAINT "Estoque_medicamento_id_fkey" FOREIGN KEY ("medicamento_id") REFERENCES "Medicamento" ("medicamento_id") ON DELETE RESTRICT ON UPDATE CASCADE
+    CONSTRAINT "estoque_medicamento_id_fkey" FOREIGN KEY ("medicamento_id") REFERENCES "medicamento" ("medicamento_id") ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
 -- CreateTable
-CREATE TABLE "Relatorio" (
+CREATE TABLE "relatorio" (
     "relatorio_id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     "usuario_id" INTEGER,
     "tipo_relatorio" TEXT,
     "arquivo_relatorio" TEXT,
-    CONSTRAINT "Relatorio_usuario_id_fkey" FOREIGN KEY ("usuario_id") REFERENCES "Usuario" ("usuario_id") ON DELETE SET NULL ON UPDATE CASCADE
+    CONSTRAINT "relatorio_usuario_id_fkey" FOREIGN KEY ("usuario_id") REFERENCES "usuario" ("usuario_id") ON DELETE SET NULL ON UPDATE CASCADE
 );
 
 -- CreateTable
-CREATE TABLE "Notificacoes" (
+CREATE TABLE "notificacao" (
     "notificacao_id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     "usuario_id" INTEGER,
     "tipo" TEXT,
     "mensagens" TEXT,
     "data_envio" DATETIME,
     "status" TEXT,
-    CONSTRAINT "Notificacoes_usuario_id_fkey" FOREIGN KEY ("usuario_id") REFERENCES "Usuario" ("usuario_id") ON DELETE SET NULL ON UPDATE CASCADE
+    CONSTRAINT "notificacao_usuario_id_fkey" FOREIGN KEY ("usuario_id") REFERENCES "usuario" ("usuario_id") ON DELETE SET NULL ON UPDATE CASCADE
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Medico_CRM_key" ON "Medico"("CRM");
+CREATE UNIQUE INDEX "medico_CRM_key" ON "medico"("CRM");

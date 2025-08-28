@@ -2,7 +2,7 @@ import prisma from '../database/database.js';
 
 async function create({ notificacao_id, usuario_id, tipo, mensagens, data_envio, status }) {
   if (notificacao_id && usuario_id && tipo && mensagens && data_envio && status) {
-    const createdNotificacao = await prisma.notificacoes.create({
+    const createdNotificacao = await prisma.notificacao.create({
       data: {
         notificacao_id,
         usuario_id,
@@ -20,15 +20,15 @@ async function create({ notificacao_id, usuario_id, tipo, mensagens, data_envio,
 }
 
 async function read(where) {
-  const notificacoes = await prisma.notificacoes.findMany({
+  const notificacao = await prisma.notificacoes.findMany({
     where: where || {},
   });
 
-  if (notificacoes.length === 1 && where) {
-    return notificacoes[0];
+  if (notificacao.length === 1 && where) {
+    return notificacao[0];
   }
 
-  return notificacoes;
+  return notificacao;
 }
 
 async function readById(notificacao_id) {
@@ -46,7 +46,7 @@ async function readById(notificacao_id) {
 
 async function update({ notificacao_id, usuario_id, tipo, mensagens, data_envio, status }) {
   if (notificacao_id && usuario_id && tipo && mensagens && data_envio && status) {
-    const updatedNotificacao = await prisma.notificacoes.update({
+    const updatedNotificacao = await prisma.notificacao.update({
       where: { notificacao_id },
       data: {
         usuario_id,
@@ -65,7 +65,7 @@ async function update({ notificacao_id, usuario_id, tipo, mensagens, data_envio,
 
 async function remove(notificacao_id) {
   if (notificacao_id) {
-    await prisma.notificacoes.delete({
+    await prisma.notificacao.delete({
       where: { notificacao_id },
     });
 

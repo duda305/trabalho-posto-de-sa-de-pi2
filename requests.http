@@ -1,0 +1,242 @@
+@host = http://localhost:3000/api
+
+### Usuários
+GET {{host}}/usuarios
+GET {{host}}/usuarios?nome=Dra.
+POST {{host}}/usuarios
+Content-Type: application/json
+
+{
+  "nome": "Dr. Novo Usuario",
+  "email": "novo.usuario@hospitalpb.com",
+  "senha": "senha123",
+  "data_cadastro": "2025-08-28"
+}
+
+PUT {{host}}/usuarios/1
+Content-Type: application/json
+
+{
+  "nome": "Dra. Luiza Costa Atualizada",
+  "email": "luiza.costa@hospitalpb.com",
+  "senha": "novaSenha123",
+  "data_cadastro": "2025-02-20"
+}
+
+DELETE {{host}}/usuarios/1
+
+### Médicos
+GET {{host}}/medicos
+GET {{host}}/medicos?nome=Luiza
+POST {{host}}/medicos
+Content-Type: application/json
+
+{
+  "nome": "Dr. Novo Medico",
+  "CRM": "CRM-PB999999",
+  "disponibilidade": "Seg-Sex, 14h-18h",
+  "telefone": "83990000000"
+}
+
+PUT {{host}}/medicos/1
+Content-Type: application/json
+
+{
+  "nome": "Dra. Luiza Costa",
+  "CRM": "CRM-PB123456",
+  "disponibilidade": "Seg-Sex, 08h-14h",
+  "telefone": "83991234567"
+}
+
+DELETE {{host}}/medicos/1
+
+### Especialidades
+GET {{host}}/especialidades
+GET {{host}}/especialidades?nome=Cardio
+POST {{host}}/especialidades
+Content-Type: application/json
+
+{
+  "nome": "Neurologista"
+}
+
+PUT {{host}}/especialidades/1
+Content-Type: application/json
+
+{
+  "nome": "Cardiologista Atualizado"
+}
+
+DELETE {{host}}/especialidades/1
+
+### Pacientes
+GET {{host}}/pacientes
+GET {{host}}/pacientes?nome=Ana
+POST {{host}}/pacientes
+Content-Type: application/json
+
+{
+  "nome": "Paciente Novo",
+  "telefone": "83991112233",
+  "bairro": "Manaíra",
+  "cidade": "João Pessoa",
+  "endereco": "Rua das Flores, 10",
+  "CEP": "58000-000"
+}
+
+PUT {{host}}/pacientes/6
+Content-Type: application/json
+
+{
+  "nome": "Ana Pereira",
+  "telefone": "83991234567",
+  "bairro": "Tambaú Atualizado",
+  "cidade": "João Pessoa",
+  "endereco": "Rua Infante Dom Henrique, n° 120",
+  "CEP": "58039-150"
+}
+
+DELETE {{host}}/pacientes/6
+
+### Consultas
+GET {{host}}/consultas
+GET {{host}}/consultas?observacao=Rotina
+POST {{host}}/consultas
+Content-Type: application/json
+
+{
+  "data_consulta": "2025-09-01",
+  "observacao": "Consulta de rotina",
+  "medico_id": 1,
+  "paciente_id": 6
+}
+
+PUT {{host}}/consultas/1
+Content-Type: application/json
+
+{
+  "data_consulta": "2025-10-01",
+  "observacao": "Consulta atualizada",
+  "medico_id": 1,
+  "paciente_id": 6
+}
+
+DELETE {{host}}/consultas/1
+
+### Medicamentos
+GET {{host}}/medicamentos
+GET {{host}}/medicamentos?nome=Paracetamol
+POST {{host}}/medicamentos
+Content-Type: application/json
+
+{
+  "nome": "Dipirona",
+  "fabricante": "Saúde Pharma",
+  "data_validade": "2026-06-30"
+}
+
+PUT {{host}}/medicamentos/1
+Content-Type: application/json
+
+{
+  "nome": "Paracetamol",
+  "fabricante": "MedPharma Atualizado",
+  "data_validade": "2025-11-30"
+}
+
+DELETE {{host}}/medicamentos/1
+
+### Estoque
+GET {{host}}/estoque
+GET {{host}}/estoque?medicamento_id=1
+POST {{host}}/estoque
+Content-Type: application/json
+
+{
+  "medicamento_id": 1,
+  "quantidade": 100
+}
+
+PUT {{host}}/estoque/1
+Content-Type: application/json
+
+{
+  "medicamento_id": 1,
+  "quantidade": 75
+}
+
+DELETE {{host}}/estoque/1
+
+### Relatórios
+GET {{host}}/relatorios
+GET {{host}}/relatorios?usuario_id=1
+POST {{host}}/relatorios
+Content-Type: application/json
+
+{
+  "usuario_id": 1,
+  "tipo_relatorio": "Consulta Médica",
+  "arquivo_relatorio": null
+}
+
+PUT {{host}}/relatorios/1
+Content-Type: application/json
+
+{
+  "usuario_id": 1,
+  "tipo_relatorio": "Consulta Médica Atualizado",
+  "arquivo_relatorio": null
+}
+
+DELETE {{host}}/relatorios/1
+
+### Notificações
+GET {{host}}/notificacoes
+GET {{host}}/notificacoes?usuario_id=6
+POST {{host}}/notificacoes
+Content-Type: application/json
+
+{
+  "usuario_id": 6,
+  "tipo": "Aviso",
+  "mensagens": "Consulta confirmada",
+  "data_envio": "2025-08-28",
+  "status": "Pendente"
+}
+
+PUT {{host}}/notificacoes/1
+Content-Type: application/json
+
+{
+  "usuario_id": 6,
+  "tipo": "Alerta",
+  "mensagens": "Consulta marcada para 25/02",
+  "data_envio": "2025-02-22",
+  "status": "Enviada"
+}
+
+DELETE {{host}}/notificacoes/1
+
+### Associação Médico-Especialidade (tem)
+GET {{host}}/tem
+POST {{host}}/tem
+Content-Type: application/json
+
+{
+  "medico_id": 1,
+  "especialidade_id": 1
+}
+
+DELETE {{host}}/tem?medico_id=1&especialidade_id=1
+
+### Associação Consulta-Medicamento (pede)
+GET {{host}}/pede
+POST {{host}}/pede
+Content-Type: application/json
+
+{
+  "consulta_id": 1,
+  "medicamento_id": 1
+}
+
+DELETE {{host}}/pede?consulta_id=1&medicamento_id=1

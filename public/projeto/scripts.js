@@ -1,7 +1,7 @@
 import { medicos } from './medicos.js';
 
 function loadMedicos() {
-    const medicosGrid = document.querySelector('.medicos');
+    const medicosGrid = document.querySelector('.medicos'); // ou '.medico' dependendo do que corrigir no HTML
     
     for (const medico of medicos) {
         const card = createMedicoCard(medico);
@@ -18,11 +18,11 @@ function createMedicoCard(medico) {
                      alt="Foto de ${medico.nome}" 
                      onerror="this.src='https://via.placeholder.com/150'" />
                 <div class="card-body d-flex flex-column">
-                    <p class="card-text">${medico.id}</p>
+                    <p class="card-text">ID: ${medico.id}</p>
                     <h5 class="card-title">${medico.nome}</h5>
                     <p class="card-text">Especialidade: ${medico.especialidade}</p>
-                    <p class="card-text">${medico.descricao}</p>
-                    <p class="card-text">${medico.horario}</p>
+                    <p class="card-text">Disponibilidade: ${medico.horario}</p>
+                    <p class="card-text">Telefone: ${medico.telefone ? medico.telefone : 'Não informado'}</p>
                 </div>
             </div>
         </div>

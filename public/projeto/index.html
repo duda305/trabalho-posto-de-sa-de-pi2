@@ -56,8 +56,129 @@
     <!-- Conteúdo -->
     <div class="container mt-5 px-3">
       <h1 class="mb-4 text-center text-primary">Médicos Disponíveis</h1>
+      
+      <div class="mb-3 text-end">
+        <button
+          class="btn btn-primary"
+          data-bs-toggle="offcanvas"
+          data-bs-target="#offcanvasForm"
+          aria-controls="offcanvasForm"
+          id="btnAddMedico"
+        >
+          + Novo Médico
+        </button>
+      </div>
+
+      <!-- CORREÇÃO AQUI: classe no plural "medicos" -->
       <div class="row medicos">
         <!-- Os cards dos médicos serão inseridos aqui via JavaScript -->
+      </div>
+    </div>
+
+    <!-- Offcanvas - Formulário -->
+    <div
+      class="offcanvas offcanvas-end"
+      tabindex="-1"
+      id="offcanvasForm"
+      aria-labelledby="offcanvasFormLabel"
+    >
+      <div class="offcanvas-header">
+        <h5 class="offcanvas-title" id="offcanvasFormLabel">Cadastrar / Editar Médico</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="offcanvas"
+          aria-label="Fechar"
+          id="btnCloseOffcanvas"
+        ></button>
+      </div>
+      <div class="offcanvas-body">
+        <form id="formMedico">
+          <input type="hidden" id="medico_id" />
+          <div class="mb-3">
+            <label for="nome" class="form-label">Nome</label>
+            <input
+              type="text"
+              class="form-control"
+              id="nome"
+              name="nome"
+              required
+              placeholder="Nome completo"
+            />
+          </div>
+          <div class="mb-3">
+            <label for="crm" class="form-label">CRM</label>
+            <input
+              type="text"
+              class="form-control"
+              id="crm"
+              name="crm"
+              required
+              placeholder="CRM-PB123456"
+            />
+          </div>
+          <div class="mb-3">
+            <label for="disponibilidade" class="form-label">Disponibilidade</label>
+            <input
+              type="text"
+              class="form-control"
+              id="disponibilidade"
+              name="disponibilidade"
+              required
+              placeholder="Seg-Sex, 08h-12h"
+            />
+          </div>
+          <div class="mb-3">
+            <label for="telefone" class="form-label">Telefone</label>
+            <input
+              type="tel"
+              class="form-control"
+              id="telefone"
+              name="telefone"
+              required
+              placeholder="83991234567"
+            />
+          </div>
+          <button type="submit" class="btn btn-primary w-100">Salvar Médico</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Modal - Confirmar exclusão -->
+    <div
+      class="modal fade"
+      id="modalConfirmDelete"
+      tabindex="-1"
+      aria-labelledby="modalConfirmDeleteLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="modalConfirmDeleteLabel">Remover Médico</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Fechar"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <p>Tem certeza que deseja remover este médico?</p>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              Cancelar
+            </button>
+            <button type="button" class="btn btn-danger" id="btnConfirmDelete">
+              Confirmar
+            </button>
+          </div>
+        </div>
       </div>
     </div>
 

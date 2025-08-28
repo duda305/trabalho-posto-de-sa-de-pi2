@@ -1,6 +1,19 @@
 import express from 'express';
 import { PrismaClient } from '../generated/prisma/client.js';
 
+
+import medico from './models/medico.js';
+import usuario from './models/usuario.js';
+import especialidade from './models/especialidade.js';
+import tem from './models/tem.js';
+import paciente from './models/paciente.js';
+import consulta from './models/consulta.js';
+import pede from './models/pede.js';
+import medicamento from './models/medicamento.js';
+import estoque from './models/estoque.js';
+import relatorio from './models/relatorio.js';
+import notificacao from './models/notificacao.js';
+
 const router = express.Router();
 const prisma = new PrismaClient();
 

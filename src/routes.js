@@ -1,9 +1,8 @@
 import express from 'express';
 import { PrismaClient } from '../generated/prisma/client.js';
 
-
 import medico from './models/medico.js';
-import usuario from './models/usuario.js';
+import usuario from './models/usuario.js';          // <-- seu model com bcrypt
 import especialidade from './models/especialidade.js';
 import tem from './models/tem.js';
 import paciente from './models/paciente.js';
@@ -17,7 +16,7 @@ import notificacao from './models/notificacao.js';
 const router = express.Router();
 const prisma = new PrismaClient();
 
-
+// --- Rotas dos Médicos ---
 router.get('/medicos', async (req, res) => {
   try {
     const medicos = await prisma.medico.findMany({
@@ -33,7 +32,6 @@ router.get('/medicos', async (req, res) => {
     res.status(500).json({ error: 'Erro ao buscar médicos' });
   }
 });
-
 
 router.post('/medicos', async (req, res) => {
   const { nome, CRM, disponibilidade, telefone, especialidadeIds } = req.body;
@@ -68,35 +66,34 @@ router.post('/medicos', async (req, res) => {
   }
 });
 
-
+// --- Rotas dos Usuários ---
 router.get('/usuarios', async (req, res) => {
   try {
-    const usuarios = await prisma.usuario.findMany();
+    const usuarios = await usuario.read(req.query);
     res.json(usuarios);
   } catch (error) {
-    console.error('Erro na rota /usuarios:', error);
+    console.error('Erro na rota GET /usuarios:', error);
     res.status(500).json({ error: 'Erro ao buscar usuários' });
   }
 });
 
-
 router.post('/usuarios', async (req, res) => {
   const { nome, email, senha } = req.body;
+
   if (!nome || !email || !senha) {
     return res.status(400).json({ error: 'Todos os campos são obrigatórios' });
   }
+
   try {
-    const novoUsuario = await prisma.usuario.create({
-      data: { nome, email, senha }
-    });
+    const novoUsuario = await usuario.create({ nome, email, senha });
     res.status(201).json({ message: 'Usuário cadastrado com sucesso!', usuario: novoUsuario });
   } catch (error) {
     console.error('Erro ao cadastrar usuário:', error);
-    res.status(500).json({ error: 'Erro ao cadastrar usuário' });
+    res.status(500).json({ error: error.message || 'Erro ao cadastrar usuário' });
   }
 });
 
-
+// --- Rotas das Especialidades ---
 router.get('/especialidades', async (req, res) => {
   try {
     const especialidades = await prisma.especialidade.findMany();
@@ -106,7 +103,6 @@ router.get('/especialidades', async (req, res) => {
     res.status(500).json({ error: 'Erro ao buscar especialidades' });
   }
 });
-
 
 router.post('/especialidades', async (req, res) => {
   const { nome } = req.body;
@@ -123,6 +119,7 @@ router.post('/especialidades', async (req, res) => {
   }
 });
 
+// --- Rotas dos Pacientes ---
 router.get('/pacientes', async (req, res) => {
   try {
     const pacientes = await prisma.paciente.findMany();
@@ -132,7 +129,6 @@ router.get('/pacientes', async (req, res) => {
     res.status(500).json({ error: 'Erro ao buscar pacientes' });
   }
 });
-
 
 router.post('/pacientes', async (req, res) => {
   const { nome, telefone, bairro, cidade, endereco, CEP } = req.body;
@@ -150,7 +146,7 @@ router.post('/pacientes', async (req, res) => {
   }
 });
 
-
+// --- Rotas das Consultas ---
 router.get('/consultas', async (req, res) => {
   try {
     const consultas = await prisma.consulta.findMany({
@@ -168,7 +164,6 @@ router.get('/consultas', async (req, res) => {
     res.status(500).json({ error: 'Erro ao buscar consultas' });
   }
 });
-
 
 router.post('/consultas', async (req, res) => {
   const { paciente_id, medico_id, data_consulta, observacao, medicamentoIds } = req.body;
@@ -203,7 +198,7 @@ router.post('/consultas', async (req, res) => {
   }
 });
 
-
+// --- Rotas dos Medicamentos ---
 router.get('/medicamentos', async (req, res) => {
   try {
     const medicamentos = await prisma.medicamento.findMany();
@@ -213,7 +208,6 @@ router.get('/medicamentos', async (req, res) => {
     res.status(500).json({ error: 'Erro ao buscar medicamentos' });
   }
 });
-
 
 router.post('/medicamentos', async (req, res) => {
   const { nome, fabricante, data_validade } = req.body;
@@ -235,6 +229,7 @@ router.post('/medicamentos', async (req, res) => {
   }
 });
 
+// --- Rotas do Estoque ---
 router.get('/estoque', async (req, res) => {
   try {
     const estoque = await prisma.estoque.findMany({
@@ -247,14 +242,12 @@ router.get('/estoque', async (req, res) => {
   }
 });
 
-
 router.post('/estoque', async (req, res) => {
   const { medicamento_id, quantidade } = req.body;
   if (!medicamento_id || quantidade == null) {
     return res.status(400).json({ error: 'Medicamento e quantidade são obrigatórios' });
   }
   try {
-
     const estoqueExistente = await prisma.estoque.findUnique({
       where: { medicamento_id }
     });
@@ -279,7 +272,7 @@ router.post('/estoque', async (req, res) => {
   }
 });
 
-
+// --- Rotas dos Relatórios ---
 router.get('/relatorios', async (req, res) => {
   try {
     const relatorios = await prisma.relatorio.findMany({
@@ -291,7 +284,6 @@ router.get('/relatorios', async (req, res) => {
     res.status(500).json({ error: 'Erro ao buscar relatórios' });
   }
 });
-
 
 router.post('/relatorios', async (req, res) => {
   const { usuario_id, tipo_relatorio, arquivo_relatorio } = req.body;
@@ -313,7 +305,7 @@ router.post('/relatorios', async (req, res) => {
   }
 });
 
-
+// --- Rotas das Notificações ---
 router.get('/notificacoes', async (req, res) => {
   try {
     const notificacoes = await prisma.notificacao.findMany({
@@ -326,21 +318,14 @@ router.get('/notificacoes', async (req, res) => {
   }
 });
 
-
 router.post('/notificacoes', async (req, res) => {
-  const { usuario_id, tipo, mensagens, data_envio, status } = req.body;
-  if (!usuario_id || !tipo || !mensagens) {
-    return res.status(400).json({ error: 'Usuário, tipo e mensagem são obrigatórios' });
+  const { usuario_id, mensagem } = req.body;
+  if (!usuario_id || !mensagem) {
+    return res.status(400).json({ error: 'Usuário e mensagem são obrigatórios' });
   }
   try {
     const novaNotificacao = await prisma.notificacao.create({
-      data: {
-        usuario_id,
-        tipo,
-        mensagens,
-        data_envio: data_envio ? new Date(data_envio) : null,
-        status
-      }
+      data: { usuario_id, mensagem }
     });
     res.status(201).json({ message: 'Notificação cadastrada com sucesso!', notificacao: novaNotificacao });
   } catch (error) {

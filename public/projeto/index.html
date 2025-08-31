@@ -14,10 +14,13 @@
       }
 
       .card-img-top {
-        height: 200px;
+        width: 100%;
+        height: 240px; /* altura maior para melhor visualização */
         object-fit: cover;
+        object-position: center 40%; /* melhor foco no rosto, ajusta conforme quiser */
         border-top-left-radius: 1rem;
         border-top-right-radius: 1rem;
+        display: block;
       }
 
       footer {
@@ -53,6 +56,8 @@
       </div>
     </nav>
 
+
+
     <!-- Conteúdo -->
     <div class="container mt-5 px-3">
       <h1 class="mb-4 text-center text-primary">Médicos Disponíveis</h1>
@@ -69,7 +74,6 @@
         </button>
       </div>
 
-      <!-- CORREÇÃO AQUI: classe no plural "medicos" -->
       <div class="row medicos">
         <!-- Os cards dos médicos serão inseridos aqui via JavaScript -->
       </div>
@@ -107,14 +111,14 @@
             />
           </div>
           <div class="mb-3">
-            <label for="crm" class="form-label">CRM</label>
+            <label for="id" class="form-label">ID</label>
             <input
               type="text"
               class="form-control"
-              id="crm"
-              name="crm"
+              id="id"
+              name="id"
               required
-              placeholder="CRM-PB123456"
+              placeholder="02"
             />
           </div>
           <div class="mb-3">
@@ -125,7 +129,7 @@
               id="disponibilidade"
               name="disponibilidade"
               required
-              placeholder="Seg-Sex, 08h-12h"
+              placeholder="08h-12h"
             />
           </div>
           <div class="mb-3">
@@ -136,7 +140,7 @@
               id="telefone"
               name="telefone"
               required
-              placeholder="83991234567"
+              placeholder="(83)99123-4567"
             />
           </div>
           <button type="submit" class="btn btn-primary w-100">Salvar Médico</button>

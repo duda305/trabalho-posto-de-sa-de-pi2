@@ -6,12 +6,12 @@
     <title>Posto Saúde</title>
     <link rel="stylesheet" href="site.css">
     <link rel="shortcut icon" href="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTKjGghihhhAH85zt0uuCRgYPMhacLvWLa2ig&s">
-    <script>
+    <!-- <script>
         function mostrarTela(tela) {
             document.querySelectorAll('.tela').forEach(t => t.style.display = 'none');
             document.getElementById(tela).style.display = 'block';
         }
-    </script>
+    </script> -->
 </head>
 <body>
 
@@ -32,11 +32,11 @@
     <!-- Tela de Cadastro -->
     <section id="cadastro" class="tela" style="display: none;">
         <h2>Criar Conta</h2>
-        <form onsubmit="event.preventDefault(); mostrarTela('perfil');">
-            <input type="text" placeholder="Nome Completo" required>
-            <input type="email" placeholder="E-mail" required>
-            <input type="password" placeholder="Senha" required>
-            <input type="password" placeholder="Confirme sua Senha" required>
+        <form id="cadastrarUsuario" onsubmit="cadastrarUsuario(event)">
+            <input type="text" name="nome" placeholder="Nome Completo" required>
+            <input type="email" name="email" placeholder="E-mail" required>
+            <input type="password" name="senha" placeholder="Senha" required>
+            <input type="password" name="confirmacao_senha" placeholder="Confirme sua Senha" required>
             <button type="submit">Cadastrar</button>
             <p>Já tem uma conta? <a href="#" onclick="mostrarTela('login')">Entre aqui</a></p>
         </form>
@@ -86,6 +86,6 @@
         <button>Recursos</button>
         <button onclick="mostrarTela('perfil')">Voltar</button>
     </section>
-
+    <script type="module" src="js/index.js"></script>
 </body>
 </html>

@@ -9,7 +9,7 @@ async function create({ nome, email, senha }) {
       data: {
         nome,
         email,
-        senha: 12345,
+        senha,
       },
     });
 

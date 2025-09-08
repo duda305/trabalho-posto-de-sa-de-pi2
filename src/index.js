@@ -1,24 +1,27 @@
 import express from 'express';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
+import morgan from 'morgan';
+// import path from 'path';
+// import { fileURLToPath } from 'url';
+// import { dirname } from 'path';
 import router from './routes.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+// const __filename = fileURLToPath(import.meta.url);
+// const __dirname = dirname(__filename);
 
 const app = express();
+
+app.use(morgan('tiny'));
 
 // Middleware para JSON
 app.use(express.json());
 
 // Servir arquivos estáticos da pasta public
-app.use(express.static(path.join(__dirname, '../public')));
+app.use(express.static('public'));
 
 // Redirecionar para index.html na raiz
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, '../public/index.html'));
-});
+// app.get('/', (req, res) => {
+//   res.redirect('projeto/index.html');
+// });
 
 // Suas rotas da API
 app.use('/api', router);

@@ -1,336 +1,334 @@
 import express from 'express';
-import { PrismaClient } from '../generated/prisma/client.js';
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcrypt';
+
+import { isAuthenticated } from './middleware/auth.js';
 
 import medico from './models/medico.js';
-import usuario from './models/usuario.js';          // <-- seu model com bcrypt
+import usuario from './models/usuario.js';
 import especialidade from './models/especialidade.js';
-import tem from './models/tem.js';
 import paciente from './models/paciente.js';
 import consulta from './models/consulta.js';
-import pede from './models/pede.js';
 import medicamento from './models/medicamento.js';
 import estoque from './models/estoque.js';
 import relatorio from './models/relatorio.js';
 import notificacao from './models/notificacao.js';
 
-const router = express.Router();
-const prisma = new PrismaClient();
+class HTTPError extends Error {
+  constructor(message, code) {
+    super(message);
+    this.code = code;
+  }
+}
 
-// --- Rotas dos Médicos ---
-router.get('/medicos', async (req, res) => {
+const router = express.Router();
+
+// --- MÉDICOS ---
+// Listar médicos
+router.get('/medicos', isAuthenticated, async (req, res, next) => {
   try {
-    const medicos = await prisma.medico.findMany({
-      include: { 
-        especialidades: {
-          include: { especialidade: true }
-        }
-      }
-    });
+    const medicos = await medico.read(req.query);
     res.json(medicos);
   } catch (error) {
-    console.error('Erro na rota /medicos:', error);
-    res.status(500).json({ error: 'Erro ao buscar médicos' });
+    next(error);
   }
 });
 
-router.post('/medicos', async (req, res) => {
-  const { nome, CRM, disponibilidade, telefone, especialidadeIds } = req.body;
-
-  if (!nome || !CRM || !especialidadeIds || !Array.isArray(especialidadeIds) || especialidadeIds.length === 0) {
-    return res.status(400).json({ error: 'Nome, CRM e pelo menos uma especialidade são obrigatórios' });
-  }
-
+// Criar médico
+router.post('/medicos', isAuthenticated, async (req, res, next) => {
   try {
-    const novoMedico = await prisma.medico.create({
-      data: {
-        nome,
-        CRM,
-        disponibilidade,
-        telefone,
-        especialidades: {
-          create: especialidadeIds.map(id => ({
-            especialidade_id: id
-          }))
-        }
-      },
-      include: {
-        especialidades: {
-          include: { especialidade: true }
-        }
-      }
-    });
+    const medicoData = req.body;
+
+    if (!medicoData.nome || !medicoData.CRM) {
+      throw new HTTPError('Nome e CRM são obrigatórios', 400);
+    }
+
+    const novoMedico = await medico.create(medicoData);
+
     res.status(201).json({ message: 'Médico cadastrado com sucesso!', medico: novoMedico });
   } catch (error) {
-    console.error('Erro ao cadastrar médico:', error);
-    res.status(500).json({ error: 'Erro ao cadastrar médico' });
+    next(error);
   }
 });
 
-// --- Rotas dos Usuários ---
-router.get('/usuarios', async (req, res) => {
+// --- USUÁRIOS ---
+// Listar usuários (somente para admins, talvez)
+router.get('/usuarios', isAuthenticated, async (req, res, next) => {
   try {
     const usuarios = await usuario.read(req.query);
     res.json(usuarios);
   } catch (error) {
-    console.error('Erro na rota GET /usuarios:', error);
-    res.status(500).json({ error: 'Erro ao buscar usuários' });
+    next(error);
   }
 });
 
-router.post('/usuarios', async (req, res) => {
-  const { nome, email, senha } = req.body;
-
-  if (!nome || !email || !senha) {
-    return res.status(400).json({ error: 'Todos os campos são obrigatórios' });
-  }
-
+// Criar usuário (cadastro)
+router.post('/usuarios', async (req, res, next) => {
   try {
-    const novoUsuario = await usuario.create({ nome, email, senha });
-    res.status(201).json({ message: 'Usuário cadastrado com sucesso!', usuario: novoUsuario });
-  } catch (error) {
-    console.error('Erro ao cadastrar usuário:', error);
-    res.status(500).json({ error: error.message || 'Erro ao cadastrar usuário' });
-  }
-});
+    const userData = req.body;
 
-// --- Rotas das Especialidades ---
-router.get('/especialidades', async (req, res) => {
-  try {
-    const especialidades = await prisma.especialidade.findMany();
-    res.json(especialidades);
-  } catch (error) {
-    console.error('Erro na rota /especialidades:', error);
-    res.status(500).json({ error: 'Erro ao buscar especialidades' });
-  }
-});
-
-router.post('/especialidades', async (req, res) => {
-  const { nome } = req.body;
-  if (!nome) return res.status(400).json({ error: 'Nome da especialidade é obrigatório' });
-
-  try {
-    const novaEspecialidade = await prisma.especialidade.create({
-      data: { nome }
-    });
-    res.status(201).json({ message: 'Especialidade cadastrada com sucesso!', especialidade: novaEspecialidade });
-  } catch (error) {
-    console.error('Erro ao cadastrar especialidade:', error);
-    res.status(500).json({ error: 'Erro ao cadastrar especialidade' });
-  }
-});
-
-// --- Rotas dos Pacientes ---
-router.get('/pacientes', async (req, res) => {
-  try {
-    const pacientes = await prisma.paciente.findMany();
-    res.json(pacientes);
-  } catch (error) {
-    console.error('Erro na rota /pacientes:', error);
-    res.status(500).json({ error: 'Erro ao buscar pacientes' });
-  }
-});
-
-router.post('/pacientes', async (req, res) => {
-  const { nome, telefone, bairro, cidade, endereco, CEP } = req.body;
-  if (!nome) {
-    return res.status(400).json({ error: 'Nome é obrigatório' });
-  }
-  try {
-    const novoPaciente = await prisma.paciente.create({
-      data: { nome, telefone, bairro, cidade, endereco, CEP }
-    });
-    res.status(201).json({ message: 'Paciente cadastrado com sucesso!', paciente: novoPaciente });
-  } catch (error) {
-    console.error('Erro ao cadastrar paciente:', error);
-    res.status(500).json({ error: 'Erro ao cadastrar paciente' });
-  }
-});
-
-// --- Rotas das Consultas ---
-router.get('/consultas', async (req, res) => {
-  try {
-    const consultas = await prisma.consulta.findMany({
-      include: {
-        paciente: true,
-        medico: true,
-        medicamentos: {
-          include: { medicamento: true }
-        }
-      }
-    });
-    res.json(consultas);
-  } catch (error) {
-    console.error('Erro na rota /consultas:', error);
-    res.status(500).json({ error: 'Erro ao buscar consultas' });
-  }
-});
-
-router.post('/consultas', async (req, res) => {
-  const { paciente_id, medico_id, data_consulta, observacao, medicamentoIds } = req.body;
-  
-  if (!paciente_id || !medico_id || !data_consulta) {
-    return res.status(400).json({ error: 'Paciente, médico e data da consulta são obrigatórios' });
-  }
-
-  try {
-    const novaConsulta = await prisma.consulta.create({
-      data: {
-        paciente_id,
-        medico_id,
-        data_consulta: new Date(data_consulta),
-        observacao,
-        medicamentos: medicamentoIds && medicamentoIds.length > 0 ? {
-          create: medicamentoIds.map(id => ({
-            medicamento_id: id
-          }))
-        } : undefined
-      },
-      include: {
-        paciente: true,
-        medico: true,
-        medicamentos: { include: { medicamento: true } }
-      }
-    });
-    res.status(201).json({ message: 'Consulta cadastrada com sucesso!', consulta: novaConsulta });
-  } catch (error) {
-    console.error('Erro ao cadastrar consulta:', error);
-    res.status(500).json({ error: 'Erro ao cadastrar consulta' });
-  }
-});
-
-// --- Rotas dos Medicamentos ---
-router.get('/medicamentos', async (req, res) => {
-  try {
-    const medicamentos = await prisma.medicamento.findMany();
-    res.json(medicamentos);
-  } catch (error) {
-    console.error('Erro na rota /medicamentos:', error);
-    res.status(500).json({ error: 'Erro ao buscar medicamentos' });
-  }
-});
-
-router.post('/medicamentos', async (req, res) => {
-  const { nome, fabricante, data_validade } = req.body;
-  if (!nome) {
-    return res.status(400).json({ error: 'Nome do medicamento é obrigatório' });
-  }
-  try {
-    const novoMedicamento = await prisma.medicamento.create({
-      data: {
-        nome,
-        fabricante,
-        data_validade: data_validade ? new Date(data_validade) : null,
-      }
-    });
-    res.status(201).json({ message: 'Medicamento cadastrado com sucesso!', medicamento: novoMedicamento });
-  } catch (error) {
-    console.error('Erro ao cadastrar medicamento:', error);
-    res.status(500).json({ error: 'Erro ao cadastrar medicamento' });
-  }
-});
-
-// --- Rotas do Estoque ---
-router.get('/estoque', async (req, res) => {
-  try {
-    const estoque = await prisma.estoque.findMany({
-      include: { medicamento: true }
-    });
-    res.json(estoque);
-  } catch (error) {
-    console.error('Erro na rota /estoque:', error);
-    res.status(500).json({ error: 'Erro ao buscar estoque' });
-  }
-});
-
-router.post('/estoque', async (req, res) => {
-  const { medicamento_id, quantidade } = req.body;
-  if (!medicamento_id || quantidade == null) {
-    return res.status(400).json({ error: 'Medicamento e quantidade são obrigatórios' });
-  }
-  try {
-    const estoqueExistente = await prisma.estoque.findUnique({
-      where: { medicamento_id }
-    });
-
-    let estoqueAtualizado;
-
-    if (estoqueExistente) {
-      estoqueAtualizado = await prisma.estoque.update({
-        where: { medicamento_id },
-        data: { quantidade }
-      });
-    } else {
-      estoqueAtualizado = await prisma.estoque.create({
-        data: { medicamento_id, quantidade }
-      });
+    if (!userData.nome || !userData.email || !userData.senha) {
+      throw new HTTPError('Nome, email e senha são obrigatórios', 400);
     }
 
-    res.status(201).json({ message: 'Estoque atualizado com sucesso!', estoque: estoqueAtualizado });
+    // Aqui, idealmente, você hash a senha antes de salvar
+    const hashedPassword = await bcrypt.hash(userData.senha, 10);
+    userData.senha = hashedPassword;
+
+    const novoUsuario = await usuario.create(userData);
+
+    delete novoUsuario.senha;
+
+    res.status(201).json({ message: 'Usuário criado com sucesso!', usuario: novoUsuario });
   } catch (error) {
-    console.error('Erro ao atualizar estoque:', error);
-    res.status(500).json({ error: 'Erro ao atualizar estoque' });
+    next(error);
   }
 });
 
-// --- Rotas dos Relatórios ---
-router.get('/relatorios', async (req, res) => {
+// Obter dados do usuário logado
+router.get('/usuarios/me', isAuthenticated, async (req, res, next) => {
   try {
-    const relatorios = await prisma.relatorio.findMany({
-      include: { usuario: true }
-    });
-    res.json(relatorios);
+    const userId = req.userId;
+
+    const user = await usuario.readById(userId);
+
+    if (!user) throw new HTTPError('Usuário não encontrado', 404);
+
+    delete user.senha;
+
+    res.json(user);
   } catch (error) {
-    console.error('Erro na rota /relatorios:', error);
-    res.status(500).json({ error: 'Erro ao buscar relatórios' });
+    next(error);
   }
 });
 
-router.post('/relatorios', async (req, res) => {
-  const { usuario_id, tipo_relatorio, arquivo_relatorio } = req.body;
-  if (!usuario_id || !tipo_relatorio) {
-    return res.status(400).json({ error: 'Usuário e tipo do relatório são obrigatórios' });
-  }
+// --- LOGIN ---
+router.post('/signin', async (req, res, next) => {
   try {
-    const novoRelatorio = await prisma.relatorio.create({
-      data: {
-        usuario_id,
-        tipo_relatorio,
-        arquivo_relatorio
-      }
-    });
-    res.status(201).json({ message: 'Relatório cadastrado com sucesso!', relatorio: novoRelatorio });
+    const { email, senha } = req.body;
+
+    if (!email || !senha) throw new HTTPError('Email e senha são obrigatórios', 400);
+
+    const user = await usuario.read({ email });
+
+    if (!user) {
+      return res.status(401).json({ error: 'Usuário não encontrado' });
+    }
+
+    const match = await bcrypt.compare(senha, user.senha);
+
+    if (!match) {
+      return res.status(401).json({ error: 'Senha incorreta' });
+    }
+
+    const token = jwt.sign(
+      { userId: user.id },
+      process.env.JWT_SECRET,
+      { expiresIn: '1h' }
+    );
+
+    res.json({ auth: true, token });
   } catch (error) {
-    console.error('Erro ao cadastrar relatório:', error);
-    res.status(500).json({ error: 'Erro ao cadastrar relatório' });
+    next(error);
   }
 });
 
-// --- Rotas das Notificações ---
-router.get('/notificacoes', async (req, res) => {
+// --- ESPECIALIDADES ---
+router.get('/especialidades', isAuthenticated, async (req, res, next) => {
   try {
-    const notificacoes = await prisma.notificacao.findMany({
-      include: { usuario: true }
-    });
-    res.json(notificacoes);
+    const especialidades = await especialidade.read(req.query);
+    res.json(especialidades);
   } catch (error) {
-    console.error('Erro na rota /notificacoes:', error);
-    res.status(500).json({ error: 'Erro ao buscar notificações' });
+    next(error);
   }
 });
 
-router.post('/notificacoes', async (req, res) => {
-  const { usuario_id, mensagem } = req.body;
-  if (!usuario_id || !mensagem) {
-    return res.status(400).json({ error: 'Usuário e mensagem são obrigatórios' });
-  }
+router.post('/especialidades', isAuthenticated, async (req, res, next) => {
   try {
-    const novaNotificacao = await prisma.notificacao.create({
-      data: { usuario_id, mensagem }
-    });
-    res.status(201).json({ message: 'Notificação cadastrada com sucesso!', notificacao: novaNotificacao });
+    const especialidadeData = req.body;
+
+    if (!especialidadeData.nome) {
+      throw new HTTPError('Nome da especialidade é obrigatório', 400);
+    }
+
+    const novaEspecialidade = await especialidade.create(especialidadeData);
+
+    res.status(201).json({ message: 'Especialidade criada com sucesso!', especialidade: novaEspecialidade });
   } catch (error) {
-    console.error('Erro ao cadastrar notificação:', error);
-    res.status(500).json({ error: 'Erro ao cadastrar notificação' });
+    next(error);
+  }
+});
+
+// --- PACIENTES ---
+router.get('/pacientes', isAuthenticated, async (req, res, next) => {
+  try {
+    const pacientes = await paciente.read(req.query);
+    res.json(pacientes);
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.post('/pacientes', isAuthenticated, async (req, res, next) => {
+  try {
+    const pacienteData = req.body;
+
+    if (!pacienteData.nome) {
+      throw new HTTPError('Nome do paciente é obrigatório', 400);
+    }
+
+    const novoPaciente = await paciente.create(pacienteData);
+
+    res.status(201).json({ message: 'Paciente criado com sucesso!', paciente: novoPaciente });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// --- CONSULTAS ---
+router.get('/consultas', isAuthenticated, async (req, res, next) => {
+  try {
+    const consultas = await consulta.read(req.query);
+    res.json(consultas);
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.post('/consultas', isAuthenticated, async (req, res, next) => {
+  try {
+    const consultaData = req.body;
+
+    if (!consultaData.paciente_id || !consultaData.medico_id || !consultaData.data_consulta) {
+      throw new HTTPError('Paciente, médico e data da consulta são obrigatórios', 400);
+    }
+
+    consultaData.data_consulta = new Date(consultaData.data_consulta);
+
+    const novaConsulta = await consulta.create(consultaData);
+
+    res.status(201).json({ message: 'Consulta criada com sucesso!', consulta: novaConsulta });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// --- MEDICAMENTOS ---
+router.get('/medicamentos', isAuthenticated, async (req, res, next) => {
+  try {
+    const medicamentos = await medicamento.read(req.query);
+    res.json(medicamentos);
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.post('/medicamentos', isAuthenticated, async (req, res, next) => {
+  try {
+    const medicamentoData = req.body;
+
+    if (!medicamentoData.nome) {
+      throw new HTTPError('Nome do medicamento é obrigatório', 400);
+    }
+
+    const novoMedicamento = await medicamento.create(medicamentoData);
+
+    res.status(201).json({ message: 'Medicamento criado com sucesso!', medicamento: novoMedicamento });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// --- ESTOQUE ---
+router.get('/estoque', isAuthenticated, async (req, res, next) => {
+  try {
+    const estoqueDados = await estoque.read(req.query);
+    res.json(estoqueDados);
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.post('/estoque', isAuthenticated, async (req, res, next) => {
+  try {
+    const estoqueData = req.body;
+
+    if (!estoqueData.medicamento_id || estoqueData.quantidade == null) {
+      throw new HTTPError('Medicamento e quantidade são obrigatórios', 400);
+    }
+
+    const novoEstoque = await estoque.create(estoqueData);
+
+    res.status(201).json({ message: 'Estoque atualizado com sucesso!', estoque: novoEstoque });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// --- RELATÓRIOS ---
+router.get('/relatorios', isAuthenticated, async (req, res, next) => {
+  try {
+    const relatoriosDados = await relatorio.read(req.query);
+    res.json(relatoriosDados);
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.post('/relatorios', isAuthenticated, async (req, res, next) => {
+  try {
+    const relatorioData = req.body;
+
+    if (!relatorioData.usuario_id || !relatorioData.tipo_relatorio) {
+      throw new HTTPError('Usuário e tipo de relatório são obrigatórios', 400);
+    }
+
+    const novoRelatorio = await relatorio.create(relatorioData);
+
+    res.status(201).json({ message: 'Relatório criado com sucesso!', relatorio: novoRelatorio });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// --- NOTIFICAÇÕES ---
+router.get('/notificacoes', isAuthenticated, async (req, res, next) => {
+  try {
+    const notificacoesDados = await notificacao.read(req.query);
+    res.json(notificacoesDados);
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.post('/notificacoes', isAuthenticated, async (req, res, next) => {
+  try {
+    const notificacaoData = req.body;
+
+    if (!notificacaoData.usuario_id || !notificacaoData.mensagem) {
+      throw new HTTPError('Usuário e mensagem são obrigatórios', 400);
+    }
+
+    const novaNotificacao = await notificacao.create(notificacaoData);
+
+    res.status(201).json({ message: 'Notificação criada com sucesso!', notificacao: novaNotificacao });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// --- 404 handler ---
+router.use((req, res) => {
+  res.status(404).json({ message: 'Content not found!' });
+});
+
+// --- Error handler middleware ---
+router.use((error, req, res, next) => {
+  if (error instanceof HTTPError) {
+    res.status(error.code).json({ message: error.message });
+  } else {
+    console.error(error.stack);
+    res.status(500).json({ message: 'Internal server error' });
   }
 });
 

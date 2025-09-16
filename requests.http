@@ -1,8 +1,17 @@
 @host = http://localhost:3000/api
+@token = 
+@createdUserId = 
+@createdMedicoId = 
+@createdEspecialidadeId = 
+@createdPacienteId = 
+@createdConsultaId = 
+@createdMedicamentoId = 
+@createdEstoqueId = 
+@createdRelatorioId = 
+@createdNotificacaoId = 
 
-### Usuários
-GET {{host}}/usuarios
-GET {{host}}/usuarios?nome=Dra.
+### Create User
+# @name createUser
 POST {{host}}/usuarios
 Content-Type: application/json
 
@@ -13,7 +22,31 @@ Content-Type: application/json
   "data_cadastro": "2025-08-28"
 }
 
-PUT {{host}}/usuarios/1
+### Signin User
+# @name signin
+POST {{host}}/signin
+Content-Type: application/json
+
+{
+  "email": "novo.usuario@hospitalpb.com",
+  "senha": "senha123"
+}
+
+### Set Token
+# Use a resposta do login para setar a variável token:
+# Exemplo em sua ferramenta: {{signin.response.body.token}}
+
+### Read Users (with token)
+GET {{host}}/usuarios
+Authorization: Bearer {{token}}
+
+### Read Users filtered by nome
+GET {{host}}/usuarios?nome=Dra.
+Authorization: Bearer {{token}}
+
+### Update User
+PUT {{host}}/usuarios/{{createdUserId}}
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -23,12 +56,14 @@ Content-Type: application/json
   "data_cadastro": "2025-02-20"
 }
 
-DELETE {{host}}/usuarios/1
+### Delete User
+DELETE {{host}}/usuarios/{{createdUserId}}
+Authorization: Bearer {{token}}
 
-### Médicos
-GET {{host}}/medicos
-GET {{host}}/medicos?nome=Luiza
+### Create Médico
+# @name createMedico
 POST {{host}}/medicos
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -38,7 +73,17 @@ Content-Type: application/json
   "telefone": "83990000000"
 }
 
-PUT {{host}}/medicos/1
+### Read Médicos
+GET {{host}}/medicos
+Authorization: Bearer {{token}}
+
+### Read Médicos filtered by nome
+GET {{host}}/medicos?nome=Luiza
+Authorization: Bearer {{token}}
+
+### Update Médico
+PUT {{host}}/medicos/{{createdMedicoId}}
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -48,31 +93,45 @@ Content-Type: application/json
   "telefone": "83991234567"
 }
 
-DELETE {{host}}/medicos/1
+### Delete Médico
+DELETE {{host}}/medicos/{{createdMedicoId}}
+Authorization: Bearer {{token}}
 
-### Especialidades
-GET {{host}}/especialidades
-GET {{host}}/especialidades?nome=Cardio
+### Create Especialidade
+# @name createEspecialidade
 POST {{host}}/especialidades
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
   "nome": "Neurologista"
 }
 
-PUT {{host}}/especialidades/1
+### Read Especialidades
+GET {{host}}/especialidades
+Authorization: Bearer {{token}}
+
+### Read Especialidades filtered by nome
+GET {{host}}/especialidades?nome=Cardio
+Authorization: Bearer {{token}}
+
+### Update Especialidade
+PUT {{host}}/especialidades/{{createdEspecialidadeId}}
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
   "nome": "Cardiologista Atualizado"
 }
 
-DELETE {{host}}/especialidades/1
+### Delete Especialidade
+DELETE {{host}}/especialidades/{{createdEspecialidadeId}}
+Authorization: Bearer {{token}}
 
-### Pacientes
-GET {{host}}/pacientes
-GET {{host}}/pacientes?nome=Ana
+### Create Paciente
+# @name createPaciente
 POST {{host}}/pacientes
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -84,7 +143,17 @@ Content-Type: application/json
   "CEP": "58000-000"
 }
 
-PUT {{host}}/pacientes/6
+### Read Pacientes
+GET {{host}}/pacientes
+Authorization: Bearer {{token}}
+
+### Read Pacientes filtered by nome
+GET {{host}}/pacientes?nome=Ana
+Authorization: Bearer {{token}}
+
+### Update Paciente
+PUT {{host}}/pacientes/{{createdPacienteId}}
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -96,37 +165,51 @@ Content-Type: application/json
   "CEP": "58039-150"
 }
 
-DELETE {{host}}/pacientes/6
+### Delete Paciente
+DELETE {{host}}/pacientes/{{createdPacienteId}}
+Authorization: Bearer {{token}}
 
-### Consultas
-GET {{host}}/consultas
-GET {{host}}/consultas?observacao=Rotina
+### Create Consulta
+# @name createConsulta
 POST {{host}}/consultas
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
   "data_consulta": "2025-09-01",
   "observacao": "Consulta de rotina",
-  "medico_id": 1,
-  "paciente_id": 6
+  "medico_id": {{createdMedicoId}},
+  "paciente_id": {{createdPacienteId}}
 }
 
-PUT {{host}}/consultas/1
+### Read Consultas
+GET {{host}}/consultas
+Authorization: Bearer {{token}}
+
+### Read Consultas filtered by observacao
+GET {{host}}/consultas?observacao=Rotina
+Authorization: Bearer {{token}}
+
+### Update Consulta
+PUT {{host}}/consultas/{{createdConsultaId}}
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
   "data_consulta": "2025-10-01",
   "observacao": "Consulta atualizada",
-  "medico_id": 1,
-  "paciente_id": 6
+  "medico_id": {{createdMedicoId}},
+  "paciente_id": {{createdPacienteId}}
 }
 
-DELETE {{host}}/consultas/1
+### Delete Consulta
+DELETE {{host}}/consultas/{{createdConsultaId}}
+Authorization: Bearer {{token}}
 
-### Medicamentos
-GET {{host}}/medicamentos
-GET {{host}}/medicamentos?nome=Paracetamol
+### Create Medicamento
+# @name createMedicamento
 POST {{host}}/medicamentos
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -135,7 +218,17 @@ Content-Type: application/json
   "data_validade": "2026-06-30"
 }
 
-PUT {{host}}/medicamentos/1
+### Read Medicamentos
+GET {{host}}/medicamentos
+Authorization: Bearer {{token}}
+
+### Read Medicamentos filtered by nome
+GET {{host}}/medicamentos?nome=Paracetamol
+Authorization: Bearer {{token}}
+
+### Update Medicamento
+PUT {{host}}/medicamentos/{{createdMedicamentoId}}
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -144,99 +237,145 @@ Content-Type: application/json
   "data_validade": "2025-11-30"
 }
 
-DELETE {{host}}/medicamentos/1
+### Delete Medicamento
+DELETE {{host}}/medicamentos/{{createdMedicamentoId}}
+Authorization: Bearer {{token}}
 
-### Estoque
-GET {{host}}/estoque
-GET {{host}}/estoque?medicamento_id=1
+### Create Estoque
+# @name createEstoque
 POST {{host}}/estoque
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
-  "medicamento_id": 1,
+  "medicamento_id": {{createdMedicamentoId}},
   "quantidade": 100
 }
 
-PUT {{host}}/estoque/1
+### Read Estoque
+GET {{host}}/estoque
+Authorization: Bearer {{token}}
+
+### Read Estoque filtered by medicamento_id
+GET {{host}}/estoque?medicamento_id={{createdMedicamentoId}}
+Authorization: Bearer {{token}}
+
+### Update Estoque
+PUT {{host}}/estoque/{{createdEstoqueId}}
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
-  "medicamento_id": 1,
+  "medicamento_id": {{createdMedicamentoId}},
   "quantidade": 75
 }
 
-DELETE {{host}}/estoque/1
+### Delete Estoque
+DELETE {{host}}/estoque/{{createdEstoqueId}}
+Authorization: Bearer {{token}}
 
-### Relatórios
-GET {{host}}/relatorios
-GET {{host}}/relatorios?usuario_id=1
+### Create Relatório
+# @name createRelatorio
 POST {{host}}/relatorios
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
-  "usuario_id": 1,
+  "usuario_id": {{createdUserId}},
   "tipo_relatorio": "Consulta Médica",
   "arquivo_relatorio": null
 }
 
-PUT {{host}}/relatorios/1
+### Read Relatórios
+GET {{host}}/relatorios
+Authorization: Bearer {{token}}
+
+### Read Relatórios filtered by usuario_id
+GET {{host}}/relatorios?usuario_id={{createdUserId}}
+Authorization: Bearer {{token}}
+
+### Update Relatório
+PUT {{host}}/relatorios/{{createdRelatorioId}}
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
-  "usuario_id": 1,
+  "usuario_id": {{createdUserId}},
   "tipo_relatorio": "Consulta Médica Atualizado",
   "arquivo_relatorio": null
 }
 
-DELETE {{host}}/relatorios/1
+### Delete Relatório
+DELETE {{host}}/relatorios/{{createdRelatorioId}}
+Authorization: Bearer {{token}}
 
-### Notificações
-GET {{host}}/notificacoes
-GET {{host}}/notificacoes?usuario_id=6
+### Create Notificação
+# @name createNotificacao
 POST {{host}}/notificacoes
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
-  "usuario_id": 6,
+  "usuario_id": {{createdUserId}},
   "tipo": "Aviso",
   "mensagens": "Consulta confirmada",
   "data_envio": "2025-08-28",
   "status": "Pendente"
 }
 
-PUT {{host}}/notificacoes/1
+### Read Notificações
+GET {{host}}/notificacoes
+Authorization: Bearer {{token}}
+
+### Read Notificações filtered by usuario_id
+GET {{host}}/notificacoes?usuario_id={{createdUserId}}
+Authorization: Bearer {{token}}
+
+### Update Notificação
+PUT {{host}}/notificacoes/{{createdNotificacaoId}}
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
-  "usuario_id": 6,
+  "usuario_id": {{createdUserId}},
   "tipo": "Alerta",
   "mensagens": "Consulta marcada para 25/02",
   "data_envio": "2025-02-22",
   "status": "Enviada"
 }
 
-DELETE {{host}}/notificacoes/1
+### Delete Notificação
+DELETE {{host}}/notificacoes/{{createdNotificacaoId}}
+Authorization: Bearer {{token}}
 
 ### Associação Médico-Especialidade (tem)
 GET {{host}}/tem
+Authorization: Bearer {{token}}
+
 POST {{host}}/tem
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
-  "medico_id": 1,
-  "especialidade_id": 1
+  "medico_id": {{createdMedicoId}},
+  "especialidade_id": {{createdEspecialidadeId}}
 }
 
-DELETE {{host}}/tem?medico_id=1&especialidade_id=1
+DELETE {{host}}/tem?medico_id={{createdMedicoId}}&especialidade_id={{createdEspecialidadeId}}
+Authorization: Bearer {{token}}
 
 ### Associação Consulta-Medicamento (pede)
 GET {{host}}/pede
+Authorization: Bearer {{token}}
+
 POST {{host}}/pede
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
-  "consulta_id": 1,
-  "medicamento_id": 1
+  "consulta_id": {{createdConsultaId}},
+  "medicamento_id": {{createdMedicamentoId}}
 }
 
-DELETE {{host}}/pede?consulta_id=1&medicamento_id=1
+DELETE {{host}}/pede?consulta_id={{createdConsultaId}}&medicamento_id={{createdMedicamentoId}}
+Authorization: Bearer {{token}}

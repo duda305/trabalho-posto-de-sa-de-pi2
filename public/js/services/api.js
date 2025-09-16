@@ -1,6 +1,6 @@
 const domain = '/api';
 
-async function create(resource, data) {
+async function create(resource, data,auth = true){
   const url = `${domain}${resource}`;
 
   const config = {
@@ -48,9 +48,21 @@ async function remove(resource) {
   const config = {
     method: 'DELETE',
     mode: 'cors',
+    headers: {
+      Authorization: `Bearer ${Auth.getToken()}`,
+    },
   };
-
-  await fetch(url, config);
+ 
+  const res = await fetch(url, config);
+ 
+  if (res.status === 401) {
+    Auth.signout();
+  }
+ 
+  return true;
 }
+
+
+//await fetch(url, config);
 
 export default { create, read, update, remove };

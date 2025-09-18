@@ -8,13 +8,23 @@ window.handleSubmit = handleSubmit;
 async function handleSubmit(event) {
   event.preventDefault();
  
-  const user = Object.fromEntries(new FormData(form));
+  if (form.checkValidity()) {
+    const user = Object.fromEntries(new FormData(form));
  
-  const { auth, token } = await API.create('/signin', user, false);
+    const { auth, token } = await API.create('/signin', user, false);
  
-  if (auth) {
-    Auth.signin(token);
+    if (auth) {
+      Auth.signin(token);
+    } else {
+      showToast('Error no login');
+    }
   } else {
-    console.log('Error no login');
+    form.classList.add('was-validated');
   }
+}
+ 
+function showToast(message) {
+  document.querySelector('.toast-header strong').innerText = message;
+  const toast = new bootstrap.Toast(document.querySelector('#liveToast'));
+  toast.show();
 }

@@ -15,7 +15,7 @@
   <body>
     <nav class="navbar navbar-expand-lg bg-light">
       <div class="container">
-        <a class="navbar-brand" href="#">VIVER</a>
+        <a class="navbar-brand" href="#">Invest App</a>
         <button
           class="navbar-toggler"
           type="button"
@@ -41,8 +41,8 @@
         </div>
       </div>
     </nav>
-    <div class="container pb-5">
-      <h1 class="text-center my-5 fw-bold">Entrar</h1>
+    <div class="container position-relative pb-5">
+      <h1 class="text-center py-5 fw-bold">Entrar</h1>
  
       <div class="row justify-content-center">
         <form
@@ -80,6 +80,27 @@
             <input type="submit" class="btn btn-primary" value="Entrar" />
           </div>
         </form>
+      </div>
+ 
+      <div class="position-absolute top-0 end-0 p-3" style="z-index: 11">
+        <div
+          id="liveToast"
+          class="toast"
+          role="alert"
+          aria-live="assertive"
+          aria-atomic="true"
+          data-bs-delay="4000"
+        >
+          <div class="toast-header">
+            <strong class="me-auto"></strong>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="toast"
+              aria-label="Close"
+            ></button>
+          </div>
+        </div>
       </div>
     </div>
  

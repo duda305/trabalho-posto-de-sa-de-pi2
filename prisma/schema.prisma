@@ -12,9 +12,9 @@ datasource db {
 }
 
 model usuario {
-  usuario_id    Int             @id @default(autoincrement())
+  usuario_id    Int            @id @default(autoincrement())
   nome          String
-  email         String          @unique
+  email         String         @unique
   senha         String
   data_cadastro DateTime       @default(now())
 

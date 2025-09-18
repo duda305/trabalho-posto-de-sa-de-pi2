@@ -1,8 +1,7 @@
 import express from 'express';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
-
-import { isAuthenticated } from './middleware/auth.js';
+import { z } from 'zod';
 
 import medico from './models/medico.js';
 import usuario from './models/usuario.js';
@@ -14,122 +13,191 @@ import estoque from './models/estoque.js';
 import relatorio from './models/relatorio.js';
 import notificacao from './models/notificacao.js';
 
-class HTTPError extends Error {
-  constructor(message, code) {
-    super(message);
-    this.code = code;
-  }
-}
+import { isAuthenticated } from './middleware/auth.js';
+import { validate } from './middleware/validate.js';
 
 const router = express.Router();
 
+class HTTPError extends Error {
+  constructor(message, statusCode) {
+    super(message);
+    this.statusCode = statusCode;
+  }
+}
+
+// --- Schemas ---
+
+const medicoSchema = z.object({
+  body: z.object({
+    nome: z.string().min(1, 'Nome é obrigatório'),
+    CRM: z.string().min(1, 'CRM é obrigatório'),
+  }),
+});
+
+const usuarioSchema = z.object({
+  body: z.object({
+    nome: z.string().min(1, 'Nome é obrigatório'),
+    email: z.string().email('Email inválido'),
+    senha: z.string().min(6, 'Senha deve ter no mínimo 6 caracteres'),
+  }),
+});
+
+const loginSchema = z.object({
+  body: z.object({
+    email: z.string().email('Email inválido'),
+    senha: z.string().min(6, 'Senha deve ter no mínimo 6 caracteres'),
+  }),
+});
+
+const especialidadeSchema = z.object({
+  body: z.object({
+    nome: z.string().min(1, 'Nome da especialidade é obrigatório'),
+  }),
+});
+
+const pacienteSchema = z.object({
+  body: z.object({
+    nome: z.string().min(1, 'Nome do paciente é obrigatório'),
+  }),
+});
+
+const consultaSchema = z.object({
+  body: z.object({
+    paciente_id: z.number().int().positive('ID do paciente inválido'),
+    medico_id: z.number().int().positive('ID do médico inválido'),
+    data_consulta: z.string().min(1, 'Data da consulta é obrigatória'),
+  }),
+});
+
+const medicamentoSchema = z.object({
+  body: z.object({
+    nome: z.string().min(1, 'Nome do medicamento é obrigatório'),
+  }),
+});
+
+const estoqueSchema = z.object({
+  body: z.object({
+    medicamento_id: z.number().int().positive('ID do medicamento inválido'),
+    quantidade: z.number().int().nonnegative('Quantidade deve ser >= 0'),
+  }),
+});
+
+const relatorioSchema = z.object({
+  body: z.object({
+    usuario_id: z.number().int().positive('ID do usuário inválido'),
+    tipo_relatorio: z.string().min(1, 'Tipo de relatório é obrigatório'),
+  }),
+});
+
+const notificacaoSchema = z.object({
+  body: z.object({
+    usuario_id: z.number().int().positive('ID do usuário inválido'),
+    mensagem: z.string().min(1, 'Mensagem é obrigatória'),
+  }),
+});
+
 // --- MÉDICOS ---
-// Listar médicos
 router.get('/medicos', isAuthenticated, async (req, res, next) => {
   try {
     const medicos = await medico.read(req.query);
     res.json(medicos);
-  } catch (error) {
-    next(error);
+  } catch (err) {
+    next(err);
   }
 });
 
-// Criar médico
-router.post('/medicos', isAuthenticated, async (req, res, next) => {
+router.post('/medicos', isAuthenticated, validate(medicoSchema), async (req, res, next) => {
   try {
-    const medicoData = req.body;
-
-    if (!medicoData.nome || !medicoData.CRM) {
-      throw new HTTPError('Nome e CRM são obrigatórios', 400);
-    }
-
-    const novoMedico = await medico.create(medicoData);
-
+    const novoMedico = await medico.create(req.body);
     res.status(201).json({ message: 'Médico cadastrado com sucesso!', medico: novoMedico });
-  } catch (error) {
-    next(error);
+  } catch (err) {
+    next(err);
   }
 });
 
 // --- USUÁRIOS ---
-// Listar usuários (somente para admins, talvez)
 router.get('/usuarios', isAuthenticated, async (req, res, next) => {
   try {
     const usuarios = await usuario.read(req.query);
     res.json(usuarios);
-  } catch (error) {
-    next(error);
+  } catch (err) {
+    next(err);
   }
 });
 
-// Criar usuário (cadastro)
-router.post('/usuarios', async (req, res, next) => {
-  try {
-    const userData = req.body;
-
-    if (!userData.nome || !userData.email || !userData.senha) {
-      throw new HTTPError('Nome, email e senha são obrigatórios', 400);
-    }
-
-    // Aqui, idealmente, você hash a senha antes de salvar
-    const hashedPassword = await bcrypt.hash(userData.senha, 10);
-    userData.senha = hashedPassword;
-
-    const novoUsuario = await usuario.create(userData);
-
-    delete novoUsuario.senha;
-
-    res.status(201).json({ message: 'Usuário criado com sucesso!', usuario: novoUsuario });
-  } catch (error) {
-    next(error);
-  }
-});
-
-// Obter dados do usuário logado
 router.get('/usuarios/me', isAuthenticated, async (req, res, next) => {
   try {
-    const userId = req.userId;
-
-    const user = await usuario.readById(userId);
-
-    if (!user) throw new HTTPError('Usuário não encontrado', 404);
-
-    delete user.senha;
-
+    const user = await usuario.readById(req.userId);
+    if (!user) return res.status(404).json({ message: 'Usuário não encontrado' });
     res.json(user);
-  } catch (error) {
-    next(error);
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/usuarios', validate(usuarioSchema), async (req, res, next) => {
+  try {
+    const { nome, email, senha } = req.body;
+    const novoUsuario = await usuario.create({ nome, email, senha });
+    const { senha: _, ...usuarioSemSenha } = novoUsuario;
+    res.status(201).json({ message: 'Usuário criado com sucesso!', usuario: usuarioSemSenha });
+  } catch (err) {
+    if (err.message === 'Email já cadastrado') {
+      return res.status(409).json({ message: err.message });
+    }
+    next(err);
+  }
+});
+
+router.put('/usuarios/:id', isAuthenticated, validate(usuarioSchema), async (req, res, next) => {
+  try {
+    const usuario_id = Number(req.params.id);
+    if (isNaN(usuario_id)) return res.status(400).json({ message: 'ID inválido' });
+
+    const { nome, email, senha } = req.body;
+    const usuarioAtualizado = await usuario.update({ usuario_id, nome, email, senha });
+    const { senha: _, ...usuarioSemSenha } = usuarioAtualizado;
+
+    res.json({ message: 'Usuário atualizado com sucesso!', usuario: usuarioSemSenha });
+  } catch (err) {
+    if (err.message === 'Email já cadastrado') {
+      return res.status(409).json({ message: err.message });
+    }
+    next(err);
+  }
+});
+
+router.delete('/usuarios/:id', isAuthenticated, async (req, res, next) => {
+  try {
+    const usuario_id = Number(req.params.id);
+    if (isNaN(usuario_id)) return res.status(400).json({ message: 'ID inválido' });
+
+    await usuario.remove(usuario_id);
+    res.json({ message: 'Usuário removido com sucesso!' });
+  } catch (err) {
+    next(err);
   }
 });
 
 // --- LOGIN ---
-router.post('/signin', async (req, res, next) => {
+router.post('/signin', validate(loginSchema), async (req, res, next) => {
   try {
     const { email, senha } = req.body;
+    const user = await usuario.readByEmail(email);
+    if (!user) return res.status(401).json({ error: 'Usuário não encontrado' });
 
-    if (!email || !senha) throw new HTTPError('Email e senha são obrigatórios', 400);
-
-    const user = await usuario.read({ email });
-
-    if (!user) {
-      return res.status(401).json({ error: 'Usuário não encontrado' });
-    }
-
-    const match = await bcrypt.compare(senha, user.senha);
-
-    if (!match) {
-      return res.status(401).json({ error: 'Senha incorreta' });
-    }
+    const senhaValida = await bcrypt.compare(senha, user.senha);
+    if (!senhaValida) return res.status(401).json({ error: 'Senha incorreta' });
 
     const token = jwt.sign(
-      { userId: user.id },
+      { userId: user.usuario_id || user.id },
       process.env.JWT_SECRET,
       { expiresIn: '1h' }
     );
 
     res.json({ auth: true, token });
-  } catch (error) {
-    next(error);
+  } catch (err) {
+    next(err);
   }
 });
 
@@ -138,24 +206,17 @@ router.get('/especialidades', isAuthenticated, async (req, res, next) => {
   try {
     const especialidades = await especialidade.read(req.query);
     res.json(especialidades);
-  } catch (error) {
-    next(error);
+  } catch (err) {
+    next(err);
   }
 });
 
-router.post('/especialidades', isAuthenticated, async (req, res, next) => {
+router.post('/especialidades', isAuthenticated, validate(especialidadeSchema), async (req, res, next) => {
   try {
-    const especialidadeData = req.body;
-
-    if (!especialidadeData.nome) {
-      throw new HTTPError('Nome da especialidade é obrigatório', 400);
-    }
-
-    const novaEspecialidade = await especialidade.create(especialidadeData);
-
+    const novaEspecialidade = await especialidade.create(req.body);
     res.status(201).json({ message: 'Especialidade criada com sucesso!', especialidade: novaEspecialidade });
-  } catch (error) {
-    next(error);
+  } catch (err) {
+    next(err);
   }
 });
 
@@ -164,24 +225,17 @@ router.get('/pacientes', isAuthenticated, async (req, res, next) => {
   try {
     const pacientes = await paciente.read(req.query);
     res.json(pacientes);
-  } catch (error) {
-    next(error);
+  } catch (err) {
+    next(err);
   }
 });
 
-router.post('/pacientes', isAuthenticated, async (req, res, next) => {
+router.post('/pacientes', isAuthenticated, validate(pacienteSchema), async (req, res, next) => {
   try {
-    const pacienteData = req.body;
-
-    if (!pacienteData.nome) {
-      throw new HTTPError('Nome do paciente é obrigatório', 400);
-    }
-
-    const novoPaciente = await paciente.create(pacienteData);
-
+    const novoPaciente = await paciente.create(req.body);
     res.status(201).json({ message: 'Paciente criado com sucesso!', paciente: novoPaciente });
-  } catch (error) {
-    next(error);
+  } catch (err) {
+    next(err);
   }
 });
 
@@ -190,26 +244,25 @@ router.get('/consultas', isAuthenticated, async (req, res, next) => {
   try {
     const consultas = await consulta.read(req.query);
     res.json(consultas);
-  } catch (error) {
-    next(error);
+  } catch (err) {
+    next(err);
   }
 });
 
-router.post('/consultas', isAuthenticated, async (req, res, next) => {
+router.post('/consultas', isAuthenticated, validate(consultaSchema), async (req, res, next) => {
   try {
-    const consultaData = req.body;
+    const dataConsulta = new Date(req.body.data_consulta);
+    if (isNaN(dataConsulta)) throw new HTTPError('Data da consulta inválida', 400);
 
-    if (!consultaData.paciente_id || !consultaData.medico_id || !consultaData.data_consulta) {
-      throw new HTTPError('Paciente, médico e data da consulta são obrigatórios', 400);
-    }
-
-    consultaData.data_consulta = new Date(consultaData.data_consulta);
-
-    const novaConsulta = await consulta.create(consultaData);
+    const novaConsulta = await consulta.create({
+      paciente_id: req.body.paciente_id,
+      medico_id: req.body.medico_id,
+      data_consulta: dataConsulta,
+    });
 
     res.status(201).json({ message: 'Consulta criada com sucesso!', consulta: novaConsulta });
-  } catch (error) {
-    next(error);
+  } catch (err) {
+    next(err);
   }
 });
 
@@ -218,118 +271,93 @@ router.get('/medicamentos', isAuthenticated, async (req, res, next) => {
   try {
     const medicamentos = await medicamento.read(req.query);
     res.json(medicamentos);
-  } catch (error) {
-    next(error);
+  } catch (err) {
+    next(err);
   }
 });
 
-router.post('/medicamentos', isAuthenticated, async (req, res, next) => {
+router.post('/medicamentos', isAuthenticated, validate(medicamentoSchema), async (req, res, next) => {
   try {
-    const medicamentoData = req.body;
-
-    if (!medicamentoData.nome) {
-      throw new HTTPError('Nome do medicamento é obrigatório', 400);
-    }
-
-    const novoMedicamento = await medicamento.create(medicamentoData);
-
+    const novoMedicamento = await medicamento.create(req.body);
     res.status(201).json({ message: 'Medicamento criado com sucesso!', medicamento: novoMedicamento });
-  } catch (error) {
-    next(error);
+  } catch (err) {
+    next(err);
   }
 });
 
 // --- ESTOQUE ---
 router.get('/estoque', isAuthenticated, async (req, res, next) => {
   try {
-    const estoqueDados = await estoque.read(req.query);
-    res.json(estoqueDados);
-  } catch (error) {
-    next(error);
+    const estoqueList = await estoque.read(req.query);
+    res.json(estoqueList);
+  } catch (err) {
+    next(err);
   }
 });
 
-router.post('/estoque', isAuthenticated, async (req, res, next) => {
+router.post('/estoque', isAuthenticated, validate(estoqueSchema), async (req, res, next) => {
   try {
-    const estoqueData = req.body;
-
-    if (!estoqueData.medicamento_id || estoqueData.quantidade == null) {
-      throw new HTTPError('Medicamento e quantidade são obrigatórios', 400);
-    }
-
-    const novoEstoque = await estoque.create(estoqueData);
-
+    const novoEstoque = await estoque.create(req.body);
     res.status(201).json({ message: 'Estoque atualizado com sucesso!', estoque: novoEstoque });
-  } catch (error) {
-    next(error);
+  } catch (err) {
+    next(err);
   }
 });
 
 // --- RELATÓRIOS ---
 router.get('/relatorios', isAuthenticated, async (req, res, next) => {
   try {
-    const relatoriosDados = await relatorio.read(req.query);
-    res.json(relatoriosDados);
-  } catch (error) {
-    next(error);
+    const relatorios = await relatorio.read(req.query);
+    res.json(relatorios);
+  } catch (err) {
+    next(err);
   }
 });
 
-router.post('/relatorios', isAuthenticated, async (req, res, next) => {
+router.post('/relatorios', isAuthenticated, validate(relatorioSchema), async (req, res, next) => {
   try {
-    const relatorioData = req.body;
-
-    if (!relatorioData.usuario_id || !relatorioData.tipo_relatorio) {
-      throw new HTTPError('Usuário e tipo de relatório são obrigatórios', 400);
-    }
-
-    const novoRelatorio = await relatorio.create(relatorioData);
-
+    const novoRelatorio = await relatorio.create(req.body);
     res.status(201).json({ message: 'Relatório criado com sucesso!', relatorio: novoRelatorio });
-  } catch (error) {
-    next(error);
+  } catch (err) {
+    next(err);
   }
 });
 
 // --- NOTIFICAÇÕES ---
 router.get('/notificacoes', isAuthenticated, async (req, res, next) => {
   try {
-    const notificacoesDados = await notificacao.read(req.query);
-    res.json(notificacoesDados);
-  } catch (error) {
-    next(error);
+    const notificacoes = await notificacao.read(req.query);
+    res.json(notificacoes);
+  } catch (err) {
+    next(err);
   }
 });
 
-router.post('/notificacoes', isAuthenticated, async (req, res, next) => {
+router.post('/notificacoes', isAuthenticated, validate(notificacaoSchema), async (req, res, next) => {
   try {
-    const notificacaoData = req.body;
-
-    if (!notificacaoData.usuario_id || !notificacaoData.mensagem) {
-      throw new HTTPError('Usuário e mensagem são obrigatórios', 400);
-    }
-
-    const novaNotificacao = await notificacao.create(notificacaoData);
-
+    const novaNotificacao = await notificacao.create(req.body);
     res.status(201).json({ message: 'Notificação criada com sucesso!', notificacao: novaNotificacao });
-  } catch (error) {
-    next(error);
+  } catch (err) {
+    next(err);
   }
 });
 
-// --- 404 handler ---
-router.use((req, res) => {
-  res.status(404).json({ message: 'Content not found!' });
-});
-
-// --- Error handler middleware ---
-router.use((error, req, res, next) => {
-  if (error instanceof HTTPError) {
-    res.status(error.code).json({ message: error.message });
-  } else {
-    console.error(error.stack);
-    res.status(500).json({ message: 'Internal server error' });
+// --- Tratamento de erros genérico ---
+router.use((err, req, res, next) => {
+  if (err instanceof HTTPError) {
+    return res.status(err.statusCode).json({ message: err.message });
   }
+
+  if (err.name === 'ZodError') {
+    return res.status(400).json({ message: 'Erro de validação', errors: err.errors });
+  }
+
+  if (err.message === 'Email já cadastrado') {
+    return res.status(409).json({ message: err.message });
+  }
+
+  console.error(err);
+  res.status(500).json({ message: 'Erro interno no servidor' });
 });
 
 export default router;

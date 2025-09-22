@@ -18,10 +18,10 @@
     <!-- Tela de Login -->
     <section id="login" class="tela">
         <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRpxVbmb1ZatxwcwZ9fzqFlPmfg4pG2lNZMlA&s" width="200" height="200" />
-        <form onsubmit="event.preventDefault(); mostrarTela('perfil');">
+        <form id="loginUsuario" onsubmit="loginUsuario(event);">
             <h2>Bem-vindo!</h2>
-            <input type="email" placeholder="E-mail" required>
-            <input type="password" placeholder="Senha" required>
+            <input type="email" name="email" placeholder="E-mail" required>
+            <input type="password" name="senha" placeholder="Senha" required>
             <button type="submit">Conectar-se</button>
             <a href="#" onclick="mostrarTela('recuperarSenha')">Esqueci a senha</a>
             <p>Não tem uma conta? <a href="#" onclick="mostrarTela('cadastro')">Cadastre-se</a></p>

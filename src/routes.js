@@ -180,14 +180,16 @@ router.delete('/usuarios/:id', isAuthenticated, async (req, res, next) => {
 });
 
 // --- LOGIN ---
-router.post('/signin', validate(loginSchema), async (req, res, next) => {
+router.post('/signin', async (req, res, next) => {
   try {
     const { email, senha } = req.body;
     const user = await usuario.readByEmail(email);
     if (!user) return res.status(401).json({ error: 'Usuário não encontrado' });
 
-    const senhaValida = await bcrypt.compare(senha, user.senha);
-    if (!senhaValida) return res.status(401).json({ error: 'Senha incorreta' });
+    // const senhaValida = await bcrypt.compare(senha, user.senha);
+    // if (!senhaValida) return res.status(401).json({ error: 'Senha incorreta' });
+
+    if (senha !== user.senha) return res.status(401).json({ error: 'Senha incorreta' });
 
     const token = jwt.sign(
       { userId: user.usuario_id || user.id },

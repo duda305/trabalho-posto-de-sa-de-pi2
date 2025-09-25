@@ -2,20 +2,42 @@
 <html lang="pt-br">
 <head>
   <meta charset="UTF-8" />
-  <title>Login - VIVER</title>
+  <title>Cadastro - VIVER</title>
   <link rel="stylesheet" href="site.css" />
 </head>
 <body>
   <section>
-    <h2>Bem-vindo!</h2>
-    <form id="loginUsuario" onsubmit="loginUsuario(event)">
-      <input type="email" name="email" placeholder="E-mail" required />
-      <input type="password" name="senha" placeholder="Senha" required />
-      <button type="submit">Conectar-se</button>
+    <h2>Criar conta</h2>
+    <form id="signupUsuario" novalidate>
+      <input type="text" id="nome" name="nome" placeholder="Nome completo" required />
+      <div class="invalid-feedback">Informe o nome do usuário.</div>
+
+      <input type="email" id="email" name="email" placeholder="E-mail" required />
+      <div class="invalid-feedback">Informe o email do usuário.</div>
+
+      <input type="password" id="password" name="password" placeholder="Senha" required />
+      <div class="invalid-feedback">Informe a senha do usuário.</div>
+
+      <input type="password" id="confirmationPassword" name="confirmationPassword" placeholder="Confirmar senha" required />
+      <div class="invalid-feedback">Confirme a senha.</div>
+
+      <button type="submit">Cadastrar</button>
     </form>
-    <p>Não tem uma conta? <a href="signup.html">Cadastre-se</a></p>
+
+    <p>Já tem conta? <a href="signin.html">Entrar</a></p>
   </section>
 
-  <script type="module" src="js/signin.js"></script>
+  <!-- Toast para mensagens -->
+  <div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div id="liveToast" class="toast" role="alert">
+      <div class="toast-header">
+        <strong class="me-auto"></strong>
+        <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+      </div>
+      <div class="toast-body"></div>
+    </div>
+  </div>
+
+  <script type="module" src="js/signup.js"></script>
 </body>
 </html>

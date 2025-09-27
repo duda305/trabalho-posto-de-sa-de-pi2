@@ -1,43 +1,23 @@
 @host = http://localhost:5555
-@usuarioId = {{createUsuario.response.body.$.id}}
-@medicoId = {{createMedico.response.body.$.id}}
-@especialidadeId = {{createEspecialidade.response.body.$.id}}
-@pacienteId = {{createPaciente.response.body.$.id}}
-@consultaId = {{createConsulta.response.body.$.id}}
-@medicamentoId = {{createMedicamento.response.body.$.id}}
-@token = {{signin.response.body.$.token}}
+@usuarioId = <COLE AQUI O ID DO USUÁRIO>
+@token = <COLE AQUI O TOKEN JWT>
+@medicoId = <COLE AQUI O ID DO MÉDICO>
+@especialidadeId = <COLE AQUI O ID DA ESPECIALIDADE>
+@pacienteId = <COLE AQUI O ID DO PACIENTE>
+@consultaId = <COLE AQUI O ID DA CONSULTA>
+@medicamentoId = <COLE AQUI O ID DO MEDICAMENTO>
 
 ### ==============================
 ### USUARIOS
 ### ==============================
 
-# Create User
-POST {{host}}/usuarios
-Content-Type: application/json
-
-{
-  "nome": "Maria Almeida",
-  "email": "maria.almeida@hospitalpb.com",
-  "senha": "senha789",
-  "data_cadastro": "2025-02-22"
-}
-
-# Signin User
-POST {{host}}/signin
-Content-Type: application/json
-
-{
-  "email": "maria.almeida@hospitalpb.com",
-  "senha": "senha789"
-}
-
-# Read User (with token)
+# Read User
 GET {{host}}/usuarios/{{usuarioId}}
-Authorization: bearer {{token}}
+Authorization: Bearer {{token}}
 
 # Update User
 PUT {{host}}/usuarios/{{usuarioId}}
-Authorization: bearer {{token}}
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -49,7 +29,8 @@ Content-Type: application/json
 
 # Delete User
 DELETE {{host}}/usuarios/{{usuarioId}}
-Authorization: bearer {{token}}
+Authorization: Bearer {{token}}
+
 
 ### ==============================
 ### MEDICOS
@@ -57,7 +38,7 @@ Authorization: bearer {{token}}
 
 # Create Medico
 POST {{host}}/medicos
-Authorization: bearer {{token}}
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -69,11 +50,11 @@ Content-Type: application/json
 
 # Read Medico
 GET {{host}}/medicos/{{medicoId}}
-Authorization: bearer {{token}}
+Authorization: Bearer {{token}}
 
 # Update Medico
 PUT {{host}}/medicos/{{medicoId}}
-Authorization: bearer {{token}}
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -85,7 +66,8 @@ Content-Type: application/json
 
 # Delete Medico
 DELETE {{host}}/medicos/{{medicoId}}
-Authorization: bearer {{token}}
+Authorization: Bearer {{token}}
+
 
 ### ==============================
 ### ESPECIALIDADES
@@ -93,7 +75,7 @@ Authorization: bearer {{token}}
 
 # Create Especialidade
 POST {{host}}/especialidades
-Authorization: bearer {{token}}
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -102,7 +84,8 @@ Content-Type: application/json
 
 # Read Especialidade
 GET {{host}}/especialidades/{{especialidadeId}}
-Authorization: bearer {{token}}
+Authorization: Bearer {{token}}
+
 
 ### ==============================
 ### TEM (Medico-Especialidade)
@@ -110,7 +93,7 @@ Authorization: bearer {{token}}
 
 # Create TEM
 POST {{host}}/tem
-Authorization: bearer {{token}}
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -120,7 +103,8 @@ Content-Type: application/json
 
 # Read TEM
 GET {{host}}/tem
-Authorization: bearer {{token}}
+Authorization: Bearer {{token}}
+
 
 ### ==============================
 ### PACIENTES
@@ -128,7 +112,7 @@ Authorization: bearer {{token}}
 
 # Create Paciente
 POST {{host}}/pacientes
-Authorization: bearer {{token}}
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -142,7 +126,8 @@ Content-Type: application/json
 
 # Read Paciente
 GET {{host}}/pacientes/{{pacienteId}}
-Authorization: bearer {{token}}
+Authorization: Bearer {{token}}
+
 
 ### ==============================
 ### CONSULTAS
@@ -150,11 +135,11 @@ Authorization: bearer {{token}}
 
 # Create Consulta
 POST {{host}}/consultas
-Authorization: bearer {{token}}
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
-  "data_consulta": "2025-02-25",
+  "data_consulta": "2025-02-25T10:00:00",
   "observacao": "Rotina anual",
   "medico_id": "{{medicoId}}",
   "paciente_id": "{{pacienteId}}"
@@ -162,25 +147,8 @@ Content-Type: application/json
 
 # Read Consulta
 GET {{host}}/consultas/{{consultaId}}
-Authorization: bearer {{token}}
+Authorization: Bearer {{token}}
 
-### ==============================
-### PEDE (Consulta-Medicamento)
-### ==============================
-
-# Create Pede
-POST {{host}}/pede
-Authorization: bearer {{token}}
-Content-Type: application/json
-
-{
-  "consulta_id": "{{consultaId}}",
-  "medicamento_id": "{{medicamentoId}}"
-}
-
-# Read Pede
-GET {{host}}/pede
-Authorization: bearer {{token}}
 
 ### ==============================
 ### MEDICAMENTOS
@@ -188,7 +156,7 @@ Authorization: bearer {{token}}
 
 # Create Medicamento
 POST {{host}}/medicamentos
-Authorization: bearer {{token}}
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -199,7 +167,27 @@ Content-Type: application/json
 
 # Read Medicamento
 GET {{host}}/medicamentos/{{medicamentoId}}
-Authorization: bearer {{token}}
+Authorization: Bearer {{token}}
+
+
+### ==============================
+### PEDE (Consulta-Medicamento)
+### ==============================
+
+# Create Pede
+POST {{host}}/pede
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "consulta_id": "{{consultaId}}",
+  "medicamento_id": "{{medicamentoId}}"
+}
+
+# Read Pede
+GET {{host}}/pede
+Authorization: Bearer {{token}}
+
 
 ### ==============================
 ### ESTOQUE
@@ -207,7 +195,7 @@ Authorization: bearer {{token}}
 
 # Create Estoque
 POST {{host}}/estoque
-Authorization: bearer {{token}}
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -217,7 +205,8 @@ Content-Type: application/json
 
 # Read Estoque
 GET {{host}}/estoque
-Authorization: bearer {{token}}
+Authorization: Bearer {{token}}
+
 
 ### ==============================
 ### RELATORIOS
@@ -225,7 +214,7 @@ Authorization: bearer {{token}}
 
 # Create Relatorio
 POST {{host}}/relatorios
-Authorization: bearer {{token}}
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -236,7 +225,8 @@ Content-Type: application/json
 
 # Read Relatorio
 GET {{host}}/relatorios
-Authorization: bearer {{token}}
+Authorization: Bearer {{token}}
+
 
 ### ==============================
 ### NOTIFICACOES
@@ -244,7 +234,7 @@ Authorization: bearer {{token}}
 
 # Create Notificacao
 POST {{host}}/notificacoes
-Authorization: bearer {{token}}
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -257,4 +247,4 @@ Content-Type: application/json
 
 # Read Notificacao
 GET {{host}}/notificacoes
-Authorization: bearer {{token}}
+Authorization: Bearer {{token}}

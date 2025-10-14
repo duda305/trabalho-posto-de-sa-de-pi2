@@ -1,56 +1,71 @@
+import API from './services/api.js';
+
 const form = document.querySelector('form');
 
-form.addEventListener('submit', handleSubmit);
+window.handleSubmit = handleSubmit;
 
 async function handleSubmit(event) {
   event.preventDefault();
 
   if (form.checkValidity()) {
-    const formData = new FormData(form);
+    const user = Object.fromEntries(new FormData(form));
 
-    const password = formData.get('password');
-    const confirmationPassword = formData.get('confirmationPassword');
+    const { email, message } = await API.create('/users', user, false);
 
-    if (password !== confirmationPassword) {
-      const error = 'As senhas não são iguais.';
-      const confirmationPasswordError = document.querySelector(
-        '#confirmationPassword + .invalid-feedback'
-      );
-      confirmationPasswordError.textContent = error;
-      form.confirmationPassword.setCustomValidity(error);
-      return;
-    }
+    if (email) {
+      location.href = '/signin.html';
+    } else if (message === 'Email already exists') {
+      const error = 'Email já cadastrado';
 
-    const user = {
-      nome: formData.get('nome'),
-      email: formData.get('email'),
-      senha: password,
-    };
+      const emailError = document.querySelector('#email + .invalid-feedback');
 
-    try {
-      const { usuario, message } = await API.create('/usuarios', user, false);
+      emailError.textContent = error;
 
-      if (usuario) {
-        showToast('Cadastro realizado com sucesso!');
-        setTimeout(() => {
-          location.href = '/signin.html';
-        }, 2000);
-      } else if (message && message.toLowerCase().includes('email')) {
-        const error = 'Email já cadastrado';
+      form.email.setCustomValidity(error);
 
-        const emailError = document.querySelector('#email + .invalid-feedback');
-        emailError.textContent = error;
-
-        form.email.setCustomValidity(error);
-        form.email.classList.add('is-invalid');
-      } else {
-        showToast('Erro no cadastro');
-      }
-    } catch (err) {
-      console.error(err);
-      showToast('Erro no servidor');
+      form.email.classList.add('is-invalid');
+    } else {
+      showToast('Error no cadastro');
     }
   } else {
     form.classList.add('was-validated');
   }
+}
+
+form.email.oninput = () => {
+  form.email.setCustomValidity('');
+
+  form.email.classList.remove('is-invalid');
+
+  const email = document.querySelector(
+    '#email + .invalid-feedback'
+  );
+
+  email.textContent = 'Informe o email do usuário.';
+};
+
+form.confirmationPassword.oninput = () => {
+  const password = form.password.value;
+
+  const confirmationPassword = form.confirmationPassword.value;
+
+  if (password !== confirmationPassword) {
+    const error = 'As senhas não são iguais.';
+
+    const confirmationPasswordError = document.querySelector(
+      '#confirmationPassword + .invalid-feedback'
+    );
+
+    confirmationPasswordError.textContent = error;
+
+    form.confirmationPassword.setCustomValidity(error);
+  } else {
+    form.confirmationPassword.setCustomValidity('');
+  }
+};
+
+function showToast(message) {
+  document.querySelector('.toast-header strong').innerText = message;
+  const toast = new bootstrap.Toast(document.querySelector('#liveToast'));
+  toast.show();
 }

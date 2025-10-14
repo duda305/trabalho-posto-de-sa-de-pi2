@@ -6,12 +6,10 @@ export function validate(schema) {
         query: req.query,
         params: req.params,
       });
+ 
       next();
     } catch (err) {
-      return res.status(400).json({
-        message: 'Erro de validação',
-        errors: err.errors,
-      });
+      return res.status(400).send(err.errors);
     }
   };
 }

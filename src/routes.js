@@ -27,13 +27,6 @@ class HTTPError extends Error {
 
 // --- Schemas ---
 
-const medicoSchema = z.object({
-  body: z.object({
-    nome: z.string().min(1, 'Nome é obrigatório'),
-    CRM: z.string().min(1, 'CRM é obrigatório'),
-  }),
-});
-
 const usuarioSchema = z.object({
   body: z.object({
     nome: z.string().min(1, 'Nome é obrigatório'),
@@ -46,6 +39,13 @@ const loginSchema = z.object({
   body: z.object({
     email: z.string().email('Email inválido'),
     senha: z.string().min(6, 'Senha deve ter no mínimo 6 caracteres'),
+  }),
+});
+
+const medicoSchema = z.object({
+  body: z.object({
+    nome: z.string().min(1, 'Nome é obrigatório'),
+    CRM: z.string().min(1, 'CRM é obrigatório'),
   }),
 });
 
@@ -96,25 +96,6 @@ const notificacaoSchema = z.object({
   }),
 });
 
-// --- MÉDICOS ---
-router.get('/medicos', isAuthenticated, async (req, res, next) => {
-  try {
-    const medicos = await medico.read(req.query);
-    res.json(medicos);
-  } catch (err) {
-    next(err);
-  }
-});
-
-router.post('/medicos', isAuthenticated, validate(medicoSchema), async (req, res, next) => {
-  try {
-    const novoMedico = await medico.create(req.body);
-    res.status(201).json({ message: 'Médico cadastrado com sucesso!', medico: novoMedico });
-  } catch (err) {
-    next(err);
-  }
-});
-
 // --- USUÁRIOS ---
 router.get('/usuarios', isAuthenticated, async (req, res, next) => {
   try {
@@ -138,13 +119,20 @@ router.get('/usuarios/me', isAuthenticated, async (req, res, next) => {
 router.post('/usuarios', validate(usuarioSchema), async (req, res, next) => {
   try {
     const { nome, email, senha } = req.body;
-    const novoUsuario = await usuario.create({ nome, email, senha });
+
+    const usuarioExistente = await usuario.readByEmail(email);
+    if (usuarioExistente) {
+      return res.status(409).json({ message: 'Email já cadastrado' });
+    }
+
+    const senhaCriptografada = await bcrypt.hash(senha, 10);
+
+    const novoUsuario = await usuario.create({ nome, email, senha: senhaCriptografada });
+
     const { senha: _, ...usuarioSemSenha } = novoUsuario;
+
     res.status(201).json({ message: 'Usuário criado com sucesso!', usuario: usuarioSemSenha });
   } catch (err) {
-    if (err.message === 'Email já cadastrado') {
-      return res.status(409).json({ message: err.message });
-    }
     next(err);
   }
 });
@@ -155,7 +143,10 @@ router.put('/usuarios/:id', isAuthenticated, validate(usuarioSchema), async (req
     if (isNaN(usuario_id)) return res.status(400).json({ message: 'ID inválido' });
 
     const { nome, email, senha } = req.body;
-    const usuarioAtualizado = await usuario.update({ usuario_id, nome, email, senha });
+
+    const senhaCriptografada = await bcrypt.hash(senha, 10);
+
+    const usuarioAtualizado = await usuario.update({ usuario_id, nome, email, senha: senhaCriptografada });
     const { senha: _, ...usuarioSemSenha } = usuarioAtualizado;
 
     res.json({ message: 'Usuário atualizado com sucesso!', usuario: usuarioSemSenha });
@@ -180,16 +171,15 @@ router.delete('/usuarios/:id', isAuthenticated, async (req, res, next) => {
 });
 
 // --- LOGIN ---
-router.post('/signin', async (req, res, next) => {
+router.post('/signin', validate(loginSchema), async (req, res, next) => {
   try {
     const { email, senha } = req.body;
     const user = await usuario.readByEmail(email);
+
     if (!user) return res.status(401).json({ error: 'Usuário não encontrado' });
 
-    // const senhaValida = await bcrypt.compare(senha, user.senha);
-    // if (!senhaValida) return res.status(401).json({ error: 'Senha incorreta' });
-
-    if (senha !== user.senha) return res.status(401).json({ error: 'Senha incorreta' });
+    const senhaValida = await bcrypt.compare(senha, user.senha);
+    if (!senhaValida) return res.status(401).json({ error: 'Senha incorreta' });
 
     const token = jwt.sign(
       { userId: user.usuario_id || user.id },
@@ -203,7 +193,26 @@ router.post('/signin', async (req, res, next) => {
   }
 });
 
-// --- ESPECIALIDADES ---
+// --- OUTRAS ROTAS (sem alterações estruturais) ---
+
+router.get('/medicos', isAuthenticated, async (req, res, next) => {
+  try {
+    const medicos = await medico.read(req.query);
+    res.json(medicos);
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/medicos', isAuthenticated, validate(medicoSchema), async (req, res, next) => {
+  try {
+    const novoMedico = await medico.create(req.body);
+    res.status(201).json({ message: 'Médico cadastrado com sucesso!', medico: novoMedico });
+  } catch (err) {
+    next(err);
+  }
+});
+
 router.get('/especialidades', isAuthenticated, async (req, res, next) => {
   try {
     const especialidades = await especialidade.read(req.query);
@@ -222,7 +231,6 @@ router.post('/especialidades', isAuthenticated, validate(especialidadeSchema), a
   }
 });
 
-// --- PACIENTES ---
 router.get('/pacientes', isAuthenticated, async (req, res, next) => {
   try {
     const pacientes = await paciente.read(req.query);
@@ -241,7 +249,6 @@ router.post('/pacientes', isAuthenticated, validate(pacienteSchema), async (req,
   }
 });
 
-// --- CONSULTAS ---
 router.get('/consultas', isAuthenticated, async (req, res, next) => {
   try {
     const consultas = await consulta.read(req.query);
@@ -268,7 +275,6 @@ router.post('/consultas', isAuthenticated, validate(consultaSchema), async (req,
   }
 });
 
-// --- MEDICAMENTOS ---
 router.get('/medicamentos', isAuthenticated, async (req, res, next) => {
   try {
     const medicamentos = await medicamento.read(req.query);
@@ -287,7 +293,6 @@ router.post('/medicamentos', isAuthenticated, validate(medicamentoSchema), async
   }
 });
 
-// --- ESTOQUE ---
 router.get('/estoque', isAuthenticated, async (req, res, next) => {
   try {
     const estoqueList = await estoque.read(req.query);
@@ -306,7 +311,6 @@ router.post('/estoque', isAuthenticated, validate(estoqueSchema), async (req, re
   }
 });
 
-// --- RELATÓRIOS ---
 router.get('/relatorios', isAuthenticated, async (req, res, next) => {
   try {
     const relatorios = await relatorio.read(req.query);
@@ -325,7 +329,6 @@ router.post('/relatorios', isAuthenticated, validate(relatorioSchema), async (re
   }
 });
 
-// --- NOTIFICAÇÕES ---
 router.get('/notificacoes', isAuthenticated, async (req, res, next) => {
   try {
     const notificacoes = await notificacao.read(req.query);
@@ -344,7 +347,7 @@ router.post('/notificacoes', isAuthenticated, validate(notificacaoSchema), async
   }
 });
 
-// --- Tratamento de erros genérico ---
+// --- Tratamento de erros ---
 router.use((err, req, res, next) => {
   if (err instanceof HTTPError) {
     return res.status(err.statusCode).json({ message: err.message });

@@ -1,22 +1,35 @@
 <!DOCTYPE html>
 <html lang="pt-br">
-  <head>
-      <meta charset="UTF-8" />
-        <title>Login - VIVER</title>
-          <link rel="stylesheet" href="site.css" />
-  </head>
-  <body>
-      <section>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Posto Saúde</title>
+    <link rel="stylesheet" href="site.css">
+    <link rel="shortcut icon" href="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTKjGghihhhAH85zt0uuCRgYPMhacLvWLa2ig&s">
+</head>
+<body>
+
+    <section class="tela">
+        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRpxVbmb1ZatxwcwZ9fzqFlPmfg4pG2lNZMlA&s" width="200" height="200" alt="Logo">
+        <form id="loginUsuario" onsubmit="loginUsuario(event);">
             <h2>Bem-vindo!</h2>
-                <form id="loginUsuario" onsubmit="loginUsuario(event)">
-                        <input type="email" name="email" placeholder="E-mail" required />
-                              <input type="password" name="senha" placeholder="Senha" required />
-                                    <button type="submit">Conectar-se</button>
-                </form>
-                    <p>Não tem uma conta? <a href="signup.html">Cadastre-se</a></p>
-              </section>
-              
-                <script type="module" src="js/signin.js"></script>
-            </body>
-          </html>
-          >
+            <input type="email" name="email" placeholder="E-mail" required>
+            <input type="password" name="senha" placeholder="Senha" required>
+            <button type="submit">Conectar-se</button>
+            <a href="#" onclick="mostrarTela('recuperarSenha')">Esqueci a senha</a>
+            <p>Não tem uma conta? <a href="signup.html">Cadastre-se</a></p>
+        </form>
+    </section>
+
+    <section id="recuperarSenha" class="tela" style="display:none;">
+        <h2>Recuperar Senha</h2>
+        <form onsubmit="event.preventDefault(); alert('Link de recuperação enviado!'); mostrarTela('login');">
+            <input type="email" placeholder="Digite seu e-mail" required>
+            <button type="submit">Enviar Link</button>
+            <a href="#" onclick="mostrarTela('login')">Voltar ao Login</a>
+        </form>
+    </section>
+
+    <script type="module" src="js/signin.js"></script>
+</body>
+</html>

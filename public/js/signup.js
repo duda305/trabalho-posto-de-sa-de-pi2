@@ -1,71 +1,38 @@
-import API from './services/api.js';
+import api from './api.js'; // ajuste o caminho se necessário
 
-const form = document.querySelector('form');
+const form = document.getElementById('cadastrarUsuario');
+const mensagem = document.getElementById('mensagemCadastro');
 
-window.handleSubmit = handleSubmit;
-
-async function handleSubmit(event) {
+form.addEventListener('submit', async (event) => {
   event.preventDefault();
+  mensagem.textContent = '';
+  mensagem.className = '';
 
-  if (form.checkValidity()) {
-    const user = Object.fromEntries(new FormData(form));
+  const formData = new FormData(form);
+  const user = Object.fromEntries(formData);
 
-    const { email, message } = await API.create('/users', user, false);
+  if (user.senha !== user.confirmacao_senha) {
+    mensagem.textContent = 'As senhas não coincidem.';
+    mensagem.classList.add('erro');
+    return;
+  }
 
-    if (email) {
-      location.href = '/signin.html';
-    } else if (message === 'Email already exists') {
-      const error = 'Email já cadastrado';
+  delete user.confirmacao_senha;
 
-      const emailError = document.querySelector('#email + .invalid-feedback');
+  try {
+    const response = await api.create('/usuarios', user);
 
-      emailError.textContent = error;
-
-      form.email.setCustomValidity(error);
-
-      form.email.classList.add('is-invalid');
+    if (response.status === 201) {
+      mensagem.textContent = response.message || 'Cadastro realizado com sucesso!';
+      mensagem.classList.add('sucesso');
+      setTimeout(() => window.location.href = 'signin.html', 2000);
     } else {
-      showToast('Error no cadastro');
+      mensagem.textContent = response.message || 'Erro ao cadastrar.';
+      mensagem.classList.add('erro');
     }
-  } else {
-    form.classList.add('was-validated');
+  } catch (err) {
+    console.error(err);
+    mensagem.textContent = 'Erro de comunicação com o servidor.';
+    mensagem.classList.add('erro');
   }
-}
-
-form.email.oninput = () => {
-  form.email.setCustomValidity('');
-
-  form.email.classList.remove('is-invalid');
-
-  const email = document.querySelector(
-    '#email + .invalid-feedback'
-  );
-
-  email.textContent = 'Informe o email do usuário.';
-};
-
-form.confirmationPassword.oninput = () => {
-  const password = form.password.value;
-
-  const confirmationPassword = form.confirmationPassword.value;
-
-  if (password !== confirmationPassword) {
-    const error = 'As senhas não são iguais.';
-
-    const confirmationPasswordError = document.querySelector(
-      '#confirmationPassword + .invalid-feedback'
-    );
-
-    confirmationPasswordError.textContent = error;
-
-    form.confirmationPassword.setCustomValidity(error);
-  } else {
-    form.confirmationPassword.setCustomValidity('');
-  }
-};
-
-function showToast(message) {
-  document.querySelector('.toast-header strong').innerText = message;
-  const toast = new bootstrap.Toast(document.querySelector('#liveToast'));
-  toast.show();
-}
+});

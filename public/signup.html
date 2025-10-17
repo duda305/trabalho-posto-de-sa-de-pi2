@@ -1,42 +1,110 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-  <meta charset="UTF-8" />
-  <title>Cadastro - VIVER</title>
-  <link rel="stylesheet" href="site.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cadastro - Posto Saúde</title>
+  <link rel="stylesheet" href="site.css">
+  <link rel="shortcut icon" href="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTKjGghihhhAH85zt0uuCRgYPMhacLvWLa2ig&s">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .tela {
+      background: #fff;
+      padding: 50px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 350px;
+      text-align: center;
+    }
+
+    h2 {
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    form input {
+      width: 100%;
+      padding: 12px;
+      margin: 8px 0;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 16px;
+    }
+
+    form button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 12px;
+      background-color: #007BFF;
+      color: #fff;
+      font-size: 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    form button:hover {
+      background-color: #0056b3;
+    }
+
+    p {
+      margin-top: 14px;
+      font-size: 16px;
+    }
+
+    p a {
+      color: #007BFF;
+      text-decoration: none;
+    }
+
+    p a:hover {
+      text-decoration: underline;
+    }
+
+    /* Mensagens */
+    #mensagemCadastro {
+      margin-top: 14px;
+      font-size: 16px;
+      min-height: 20px;
+      transition: all 0.3s;
+    }
+
+    #mensagemCadastro.sucesso {
+      color: green;
+    }
+
+    #mensagemCadastro.erro {
+      color: red;
+    }
+  </style>
 </head>
 <body>
-  <section>
-    <h2>Criar conta</h2>
-    <form id="signupUsuario" novalidate>
-      <input type="text" id="nome" name="nome" placeholder="Nome completo" required />
-      <div class="invalid-feedback">Informe o nome do usuário.</div>
 
-      <input type="email" id="email" name="email" placeholder="E-mail" required />
-      <div class="invalid-feedback">Informe o email do usuário.</div>
-
-      <input type="password" id="password" name="password" placeholder="Senha" required />
-      <div class="invalid-feedback">Informe a senha do usuário.</div>
-
-      <input type="password" id="confirmationPassword" name="confirmationPassword" placeholder="Confirmar senha" required />
-      <div class="invalid-feedback">Confirme a senha.</div>
-
+  <section class="tela">
+    <h2>Criar Conta</h2>
+    <form id="cadastrarUsuario">
+      <input type="text" name="nome" placeholder="Nome Completo" required>
+      <input type="email" name="email" placeholder="E-mail" required>
+      <input type="password" name="senha" placeholder="Senha" required>
+      <input type="password" name="confirmacao_senha" placeholder="Confirme sua Senha" required>
       <button type="submit">Cadastrar</button>
+      <p>Já tem uma conta? <a href="signin.html">Entre aqui</a></p>
     </form>
 
-    <p>Já tem conta? <a href="signin.html">Entrar</a></p>
+    <!-- Mensagem de sucesso ou erro -->
+    <div id="mensagemCadastro"></div>
   </section>
-
-  <!-- Toast para mensagens -->
-  <div class="toast-container position-fixed bottom-0 end-0 p-3">
-    <div id="liveToast" class="toast" role="alert">
-      <div class="toast-header">
-        <strong class="me-auto"></strong>
-        <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
-      </div>
-      <div class="toast-body"></div>
-    </div>
-  </div>
 
   <script type="module" src="js/signup.js"></script>
 </body>

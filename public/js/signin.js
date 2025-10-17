@@ -1,45 +1,26 @@
-import API from './services/api.js';
-import Auth from './lib/auth.js';
+import auth from './lib/auth.js';
+import api from './api.js';
 
-const form = document.querySelector('form#loginUsuario'); // mais específico
+const form = document.getElementById("loginUsuario");
+const erro = document.getElementById("loginErro");
 
-if (form) {
-  form.onsubmit = handleSubmit;
-}
-
-async function handleSubmit(event) {
+form.addEventListener("submit", async (event) => {
   event.preventDefault();
+  if (erro) erro.textContent = "";
 
-  if (form.checkValidity()) {
-    const user = Object.fromEntries(new FormData(form));
+  const user = Object.fromEntries(new FormData(form));
 
-    try {
-      const response = await API.create('/signin', user, false);
+  try {
+    const response = await api.create("/signin", user);
 
-      if (response.auth) {
-        Auth.signin(response.token); // salva o token e redireciona
-      } else {
-        showToast(response.message || 'Erro no login. Verifique os dados.');
-      }
-    } catch (err) {
-      console.error(err);
-      showToast('Erro de conexão com o servidor.');
+    if (response.auth) {
+      alert("Login efetuado com sucesso!");
+      window.location.href = "perfil.html";
+    } else if (erro) {
+      erro.textContent = response.message || "E-mail ou senha incorretos.";
     }
-  } else {
-    form.classList.add('was-validated');
+  } catch (error) {
+    console.error(error);
+    if (erro) erro.textContent = "Erro na comunicação com o servidor.";
   }
-}
-
-function showToast(message) {
-  const toastHeader = document.querySelector('.toast-header strong');
-  const toastElement = document.querySelector('#liveToast');
-
-  if (toastHeader) toastHeader.innerText = message;
-
-  if (toastElement) {
-    const toast = new bootstrap.Toast(toastElement);
-    toast.show();
-  } else {
-    alert(message); // fallback
-  }
-}
+});

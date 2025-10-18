@@ -32,7 +32,7 @@ form.addEventListener('submit', async (event) => {
     }
   } catch (err) {
     console.error(err);
-    mensagem.textContent = 'Erro de comunicação com o servidor.';
+    mensagem.textContent = 'Email já cadastrado';
     mensagem.classList.add('erro');
   }
 });

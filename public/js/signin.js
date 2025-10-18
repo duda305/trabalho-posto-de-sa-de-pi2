@@ -1,26 +1,44 @@
-import auth from './lib/auth.js';
-import api from './api.js';
+import API from './api.js';
+import Auth from './auth.js';
 
-const form = document.getElementById("loginUsuario");
-const erro = document.getElementById("loginErro");
+const form = document.getElementById('loginUsuario');
 
-form.addEventListener("submit", async (event) => {
-  event.preventDefault();
-  if (erro) erro.textContent = "";
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
 
-  const user = Object.fromEntries(new FormData(form));
+  const email = form.email.value.trim();
+  const senha = form.senha.value.trim();
+
+  // Validação simples
+  if (!email || !senha) {
+    alert('Por favor, preencha e-mail e senha.');
+    return;
+  }
+
+  // JSON que será enviado para a API
+  const loginUsuario = {
+    email: email,
+    senha: senha  
+  };
+
+  console.log('JSON enviado para /signin:', loginUsuario);
 
   try {
-    const response = await api.create("/signin", user);
+    // auth = false porque ainda não temos token
+    const res = await API.create('/signin', loginUsuario, false);
 
-    if (response.auth) {
-      alert("Login efetuado com sucesso!");
-      window.location.href = "perfil.html";
-    } else if (erro) {
-      erro.textContent = response.message || "E-mail ou senha incorretos.";
+    console.log('Login realizado:', res);
+
+    // Salva o token se a API retornar
+    if (res.token) {
+      Auth.setToken(res.token);
     }
-  } catch (error) {
-    console.error(error);
-    if (erro) erro.textContent = "Erro na comunicação com o servidor.";
+
+    // Redireciona para a página principal (ajuste para a sua rota)
+    window.location.href = '/perfil.html';
+
+  } catch (err) {
+    console.error('Erro no login:', err.message);
+    alert('Login falhou: ' + err.message);
   }
 });

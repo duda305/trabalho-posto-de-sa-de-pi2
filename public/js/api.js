@@ -1,68 +1,80 @@
+import Auth from './auth.js'; 
+
 const domain = '/api';
 
-async function create(resource, data,auth = true){
-  const url = `${domain}${resource}`;
+async function handleResponse(res) {
+  if (!res.ok) {
+    if (res.status === 401) {
+      Auth.signout(); // Desloga se não autorizado
+    }
+    const errorText = await res.text();
+    throw new Error(`Erro ${res.status}: ${errorText}`);
+  }
+  return await res.json();
+}
 
+function getAuthHeader(auth) {
+  return auth ? { Authorization: `Bearer ${Auth.getToken()}` } : {};
+}
+
+async function create(resource, data, auth = true) {
+  const url = `${domain}${resource}`;
   const config = {
     method: 'POST',
     mode: 'cors',
-    body: JSON.stringify(data),
     headers: {
       'Content-Type': 'application/json; charset=UTF-8',
+      ...getAuthHeader(auth),
+    },
+    body: JSON.stringify(data),
+  };
+
+  const res = await fetch(url, config);
+  return await handleResponse(res);
+}
+
+async function read(resource, auth = true) {
+  const url = `${domain}${resource}`;
+  const config = {
+    method: 'GET',
+    mode: 'cors',
+    headers: {
+      ...getAuthHeader(auth),
     },
   };
 
   const res = await fetch(url, config);
-
-  return await res.json();
+  return await handleResponse(res);
 }
 
-async function read(resource) {
+async function update(resource, data, auth = true) {
   const url = `${domain}${resource}`;
-
-  const res = await fetch(url);
-
-  return await res.json();
-}
-
-async function update(resource, data) {
-  const url = `${domain}${resource}`;
-
   const config = {
     method: 'PUT',
     mode: 'cors',
-    body: JSON.stringify(data),
     headers: {
       'Content-Type': 'application/json; charset=UTF-8',
+      ...getAuthHeader(auth),
     },
+    body: JSON.stringify(data),
   };
 
   const res = await fetch(url, config);
-
-  return await res.json();
+  return await handleResponse(res);
 }
 
-async function remove(resource) {
+async function remove(resource, auth = true) {
   const url = `${domain}${resource}`;
-
   const config = {
     method: 'DELETE',
     mode: 'cors',
     headers: {
-      Authorization: `Bearer ${Auth.getToken()}`,
+      ...getAuthHeader(auth),
     },
   };
- 
+
   const res = await fetch(url, config);
- 
-  if (res.status === 401) {
-    Auth.signout();
-  }
- 
-  return true;
+  return await handleResponse(res);
 }
-
-
-//await fetch(url, config);
 
 export default { create, read, update, remove };

@@ -1,61 +1,81 @@
-/* Definindo o estilo para o corpo */
+/* ===========================
+   Estilo do corpo da página
+   =========================== */
 body {
     font-family: Arial, sans-serif;
-    background-color: #f5f5f5;
+    background: linear-gradient(135deg, #e0f7fa, #b2ebf2); /* fundo igual à página de serviços */
     margin: 0;
     padding: 0;
 }
 
-/* Centralizar o conteúdo da seção */
+/* ===========================
+   Centralizar conteúdo das seções
+   =========================== */
 section {
     margin-top: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center; /* centraliza os cards */
 }
 
-/* Estilo do cartão de médico */
+/* ===========================
+   Estilo do cartão de médico
+   =========================== */
 .medico-card {
     margin: 15px;
-    padding: 20px;
+    padding: 0; /* padding interno removido para a imagem ocupar todo o topo */
     border-radius: 8px;
-    background-color: #e0f7fa;
+    background-color: #ffffff; /* branco para destacar do fundo */
     box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-    transition: transform 0.2s ease, box-shadow 0.2s ease; /* Transição suave */
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
     display: flex;
     flex-direction: column;
+    width: 300px; /* largura fixa para todos os cards */
+    overflow: hidden; /* evita que a imagem "vaze" do card */
 }
 
-/* Efeito de hover para destacar o card */
+/* ===========================
+   Efeito hover do card
+   =========================== */
 .medico-card:hover {
     transform: translateY(-5px);
     box-shadow: 0px 8px 12px rgba(0, 0, 0, 0.15);
 }
 
-/* Estilo para a imagem do médico */
-.medico-card img {
-    width: 100%;
-    height: 240px; /* Altura fixa para uniformidade */
-    object-fit: cover;       /* Cobre o espaço cortando onde necessário */
-    object-position: center top; /* Mostra o topo da imagem (rosto) */
-    border-top-left-radius: 1rem;
-    border-top-right-radius: 1rem;
-    border-radius: 8px 8px 0 0; /* Bordas arredondadas só no topo */
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+/* ===========================
+   Estilo da imagem do card
+   =========================== */
+.medico-card img,
+.jose-png {
+    width: 100%;           /* ocupa toda a largura do card */
+    height: 365px;         /* altura uniforme para todos os médicos */
+    object-fit: cover;     /* preenche o espaço sem deformar */
+    object-position: center top; /* foca na parte superior da imagem */
+    display: block;
 }
 
-/* Estilo do título do card */
+/* ===========================
+   Estilo do título do card
+   =========================== */
 .medico-card h3 {
     font-size: 1.2em;
     font-weight: bold;
-    color: #00796b; /* Cor mais escura de verde para o título */
-    margin-top: 10px;
+    color: #00796b; /* verde escuro */
+    margin: 10px;
 }
 
-/* Estilo dos parágrafos dentro do card */
+/* ===========================
+   Estilo do parágrafo do card
+   =========================== */
 .medico-card p {
     font-size: 0.9em;
     color: #555;
-    margin: 5px 0;
+    margin: 0 10px 10px 10px;
 }
 
+/* ===========================
+   Botão de deletar médico
+   =========================== */
 .btn-delete {
     background: transparent;
     border: none;
@@ -68,7 +88,7 @@ section {
 }
 
 .btn-delete:hover {
-    color: rgba(255,0,0,0.7); /* vermelho suave ao passar o mouse */
+    color: rgba(255,0,0,0.7);
 }
 
 .btn-delete svg {

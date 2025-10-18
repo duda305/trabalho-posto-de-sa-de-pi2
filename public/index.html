@@ -1,15 +1,19 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-  <head>
+<head>
     <meta charset="UTF-8" />
-    <meta http-equiv="refresh" content="0; url=signin.html" />
-    <title>Posto Saúde - Redirecionando...</title>
-    <link rel="shortcut icon" href="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTKjGghihhhAH85zt0uuCRgYPMhacLvWLa2ig&s" />
-  </head>
-  <body>
-    <p>Redirecionando para a página de login...</p>
-    <script>
-      window.location.href = "signin.html";
-    </script>
-  </body>
+    <title>Médicos Disponíveis</title>
+    <link rel="stylesheet" href="css/styles.css" />
+    <!-- opcional: Bootstrap se quiser grid responsivo -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container my-5">
+        <h2 class="text-center mb-4">Médicos Disponíveis</h2>
+        <div class="row medicos"></div>
+        <button class="btn btn-success mt-4" onclick="window.location.href='servicos.html'">Voltar</button>
+    </div>
+
+    <script type="module" src="../projeto/scripts.js"></script>
+</body>
 </html>

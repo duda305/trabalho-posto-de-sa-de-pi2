@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Serviços de Agendamento</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            /* Fundo com gradiente e textura */
+            background: linear-gradient(to bottom, #e0f7fa, #ffffff);
+            position: relative;
+            min-height: 100vh;
+        }
+
+        /* Textura sutil de cruzes médicas */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('https://www.transparenttextures.com/patterns/plus.png');
+            opacity: 0.05;
+            z-index: -1;
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #00796b; /* verde-azulado para reforçar tema saúde */
+        }
+
+        .servicos-lista {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            max-width: 300px;
+            margin: 0 auto 20px auto;
+        }
+
+        .redireciona {
+            display: block;
+            padding: 15px;
+            text-align: center;
+            background-color: #007bff;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: background 0.3s;
+        }
+
+        .redireciona:hover {
+            background-color: #0056b3;
+        }
+
+        button {
+            display: block;
+            margin: 0 auto;
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 6px;
+            background-color: #28a745;
+            color: #fff;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background-color: #1e7e34;
+        }
+    </style>
+</head>
+<body>
+    <h2>Serviços de Agendamento</h2>
+    <div class="servicos-lista">
+        <a class="redireciona" href="index.html">Médicos disponíveis</a>
+        <a class="redireciona" href="#">Cadastro de agendamentos</a>
+        <a class="redireciona" href="#">Calendário de disponibilidade</a>
+        <a class="redireciona" href="#">Especialidades</a>
+        <a class="redireciona" href="#">Cancelamento de cadastro</a>
+    </div>
+    <button onclick="voltar()">Voltar</button>
+
+    <script>
+        function voltar() {
+            window.location.href = 'perfil.html';
+        }
+    </script>
+</body>
+</html>

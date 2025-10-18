@@ -23,7 +23,7 @@ function createMedicoCard(medico) {
                 </button>
 
                 <img src="${medico.foto}" 
-                    class="card-img-top rounded-top-4"
+                    class="card-img-top rounded-top-4 ${medico.nome === 'Dr. José Silva' ? 'jose-png' : ''}"
                     alt="Foto de ${medico.nome}" 
                     onerror="this.src='https://via.placeholder.com/150'" />
                 <div class="card-body d-flex flex-column">
@@ -38,6 +38,7 @@ function createMedicoCard(medico) {
         </div>
     `;
 }
+
 
 function addDeleteFunctionality() {
     const deleteButtons = document.querySelectorAll('.btn-delete');

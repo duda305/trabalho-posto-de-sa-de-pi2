@@ -4,6 +4,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import dotenv from 'dotenv';
+import cors from 'cors';
 import router from './routes.js';
 
 dotenv.config();
@@ -16,18 +17,24 @@ const app = express();
 app.use(morgan('tiny'));
 app.use(express.json());
 
+// CORS – OBRIGATÓRIO NO CODESPACES
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+}));
+
 // Serve a pasta public estática
 app.use(express.static(path.join(__dirname, '../public')));
 
-// Rota raiz: servir o arquivo index.html dentro de projeto/
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '../public/projeto/index.html'));
 });
 
-// Rotas da API sob o prefixo /api
+// Prefixo da API
 app.use('/api', router);
 
-// Middleware global de tratamento de erros
+// Erros globais
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(err.status || 500).json({ message: err.message || 'Internal server error' });

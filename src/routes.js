@@ -15,6 +15,7 @@ import notificacao from './models/notificacao.js';
 
 import { isAuthenticated } from './middleware/auth.js';
 import { validate } from './middleware/validate.js';
+import emailService from './services/emailService.js';
 
 const router = express.Router();
 
@@ -48,8 +49,6 @@ const medicoSchema = z.object({
   }),
 });
 
-// Você pode adicionar os demais schemas da mesma forma para especialidade, paciente, etc.
-
 // ----------------- USUÁRIOS -----------------
 
 // Listar todos (protegido)
@@ -73,7 +72,7 @@ router.get('/usuarios/me', isAuthenticated, async (req, res, next) => {
   }
 });
 
-// Criar usuário (signup)
+// Criar usuário (signup) + e-mail
 router.post('/usuarios', validate(usuarioSchema), async (req, res, next) => {
   try {
     const { nome, email, senha } = req.body;
@@ -86,8 +85,10 @@ router.post('/usuarios', validate(usuarioSchema), async (req, res, next) => {
     const senhaCriptografada = await bcrypt.hash(senha, 10);
     const novoUsuario = await usuario.create({ nome, email, senha: senhaCriptografada });
 
-    const { senha: _, ...usuarioSemSenha } = novoUsuario;
+    // ENVIAR E-MAIL DE BOAS-VINDAS
+    await emailService.createNewUser(novoUsuario.email);
 
+    const { senha: _, ...usuarioSemSenha } = novoUsuario;
     res.status(201).json({ status: 201, message: 'Usuário criado com sucesso!', usuario: usuarioSemSenha });
   } catch (err) {
     next(err);
@@ -129,7 +130,6 @@ router.delete('/usuarios/:id', isAuthenticated, async (req, res, next) => {
 });
 
 // ----------------- LOGIN -----------------
-
 router.post('/signin', validate(loginSchema), async (req, res, next) => {
   try {
     const { email, senha } = req.body;
@@ -140,21 +140,14 @@ router.post('/signin', validate(loginSchema), async (req, res, next) => {
     const senhaValida = await bcrypt.compare(senha, user.senha);
     if (!senhaValida) return res.status(401).json({ status: 401, message: 'Senha incorreta' });
 
-    const token = jwt.sign(
-      { userId: user.usuario_id || user.id },
-      process.env.JWT_SECRET,
-      { expiresIn: '1h' }
-    );
-
+    const token = jwt.sign({ userId: user.usuario_id }, process.env.JWT_SECRET, { expiresIn: '1h' });
     res.json({ status: 200, auth: true, token });
   } catch (err) {
     next(err);
   }
 });
 
-// ----------------- OUTRAS ENTIDADES -----------------
-
-// Exemplo: Médicos
+// ----------------- MÉDICOS -----------------
 router.get('/medicos', isAuthenticated, async (req, res, next) => {
   try {
     const medicos = await medico.read(req.query);
@@ -173,7 +166,25 @@ router.post('/medicos', isAuthenticated, validate(medicoSchema), async (req, res
   }
 });
 
-// Repita padrão para especialidade, paciente, consulta, medicamento, estoque, relatorio, notificacao
+// Deletar médico + notificação por e-mail
+router.delete('/medicos/:id', isAuthenticated, async (req, res, next) => {
+  try {
+    const medico_id = Number(req.params.id);
+    if (isNaN(medico_id)) return res.status(400).json({ status: 400, message: 'ID inválido' });
+
+    const medicoParaExcluir = await medico.readById(medico_id);
+    if (!medicoParaExcluir) return res.status(404).json({ status: 404, message: 'Médico não encontrado' });
+
+    await medico.remove(medico_id);
+
+    // ENVIAR E-MAIL AO ADMIN
+    await emailService.notifyMedicoExcluido('admin@exemplo.com', medicoParaExcluir);
+
+    res.json({ status: 200, message: 'Médico excluído com sucesso!' });
+  } catch (err) {
+    next(err);
+  }
+});
 
 // ----------------- TRATAMENTO DE ERROS -----------------
 router.use((err, req, res, next) => {

@@ -9,36 +9,23 @@ form.addEventListener('submit', async (e) => {
   const email = form.email.value.trim();
   const senha = form.senha.value.trim();
 
-  // Validação simples
   if (!email || !senha) {
-    alert('Por favor, preencha e-mail e senha.');
+    alert('Preencha e-mail e senha.');
     return;
   }
 
-  // JSON que será enviado para a API
-  const loginUsuario = {
-    email: email,
-    senha: senha  
-  };
-
-  console.log('JSON enviado para /signin:', loginUsuario);
-
   try {
-    // auth = false porque ainda não temos token
-    const res = await API.create('/signin', loginUsuario, false);
+    // Chama /api/signin corretamente
+    const res = await API.create('/signin', { email, senha }, false);
 
-    console.log('Login realizado:', res);
-
-    // Salva o token se a API retornar
     if (res.token) {
-      Auth.setToken(res.token);
+      Auth.signin(res.token); // salva token e redireciona
+    } else {
+      alert('Login falhou: token não retornado');
     }
 
-    // Redireciona para a página principal (ajuste para a sua rota)
-    window.location.href = '/perfil.html';
-
   } catch (err) {
-    console.error('Erro no login:', err.message);
+    console.error(err);
     alert('Login falhou: ' + err.message);
   }
 });

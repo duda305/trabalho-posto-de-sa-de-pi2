@@ -11,73 +11,22 @@
 
     <section class="mostrarTela">
         <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRpxVbmb1ZatxwcwZ9fzqFlPmfg4pG2lNZMlA&s" width="200" height="200" alt="Logo">
-        <form id="loginUsuario" onsubmit="handleLogin(event)">
+
+        <form id="loginUsuario">
             <h2>Bem-vindo!</h2>
+
             <input type="email" name="email" placeholder="E-mail" required>
             <input type="password" name="senha" placeholder="Senha" required>
+
             <button type="submit">Conectar-se</button>
-            <a href="#" onclick="mostrarTela('recuperarSenha')">Esqueci a senha</a>
+
+            <a href="recuperar-senha.html">Esqueci a senha</a>
+
             <p>Não tem uma conta? <a href="signup.html">Cadastre-se</a></p>
         </form>
     </section>
 
-    <section id="recuperarSenha" class="mostrarTela" style="display:none;">
-        <h2>Recuperar Senha</h2>
-        <form onsubmit="event.preventDefault(); alert('Link de recuperação enviado!'); mostrarTela('login');">
-            <input type="email" placeholder="Digite seu e-mail" required>
-            <button type="submit">Enviar Link</button>
-            <a href="#" onclick="mostrarTela('login')">Voltar ao Login</a>
-        </form>
-    </section>
-
     <script type="module" src="js/signin.js"></script>
-    <script>
-        // Função para exibir a tela correta (login ou recuperar senha)
-        function mostrarTela(tela) {
-            if (tela === 'login') {
-                document.getElementById('recuperarSenha').style.display = 'none';
-                document.querySelector('.mostrarTela').style.display = 'block';
-            } else if (tela === 'recuperarSenha') {
-                document.getElementById('recuperarSenha').style.display = 'block';
-                document.querySelector('.mostrarTela').style.display = 'none';
-            }
-        }
 
-        // Função para tratar o envio do login
-        function handleLogin(event) {
-            event.preventDefault();  // Impede o comportamento padrão de envio do formulário
-
-            const email = event.target.email.value;
-            const senha = event.target.senha.value;
-
-            // Aqui você pode realizar a validação local (para evitar enviar se não preencher os campos, por exemplo)
-            if (!email || !senha) {
-                alert('Por favor, preencha todos os campos!');
-                return;
-            }
-
-            // Exemplo de requisição para enviar ao servidor (ajustar para sua API)
-            fetch('/api/login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ email, senha }),
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert('Login realizado com sucesso!');
-                    // Redirecionar ou carregar a página principal após o login
-                } else {
-                    alert('Credenciais inválidas');
-                }
-            })
-            .catch(error => {
-                console.error('Erro ao fazer login:', error);
-                alert('Erro ao tentar se conectar. Tente novamente mais tarde.');
-            });
-        }
-    </script>
 </body>
 </html>

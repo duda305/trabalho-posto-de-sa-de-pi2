@@ -57,6 +57,12 @@ async function readByEmail(email) {
 
   const usuario = await prisma.usuario.findUnique({
     where: { email },
+    select: {
+      usuario_id: true,
+      nome: true,
+      email: true,
+      senha: true 
+    }
   });
 
   return usuario || null;

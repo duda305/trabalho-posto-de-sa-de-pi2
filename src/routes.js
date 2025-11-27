@@ -16,6 +16,8 @@ import notificacao from './models/notificacao.js';
 import { isAuthenticated } from './middleware/auth.js';
 import { validate } from './middleware/validate.js';
 import emailService from './services/emailService.js';
+import medicoController from './controllers/medicoController.js';
+
 
 const router = express.Router();
 
@@ -46,9 +48,10 @@ const medicoSchema = z.object({
   body: z.object({
     nome: z.string().min(1, 'Nome é obrigatório'),
     CRM: z.string().min(1, 'CRM é obrigatório'),
+    disponibilidade: z.string().min(1, 'Disponibilidade é obrigatória'),
+    telefone: z.string().min(1, 'Telefone é obrigatório'),
   }),
 });
-
 // ----------------- USUÁRIOS -----------------
 
 // Listar todos (protegido)
@@ -148,39 +151,35 @@ router.post('/signin', validate(loginSchema), async (req, res, next) => {
 });
 
 // ----------------- MÉDICOS -----------------
-router.get('/medicos', isAuthenticated, async (req, res, next) => {
-  try {
-    const medicos = await medico.read(req.query);
-    res.json({ status: 200, medicos });
-  } catch (err) {
-    next(err);
-  }
-});
+router.get('/medicos', isAuthenticated, medicoController.listarMedicos);
+router.post('/medicos', isAuthenticated, validate(medicoSchema), medicoController.criarMedico);
+router.put('/medicos/:id', isAuthenticated, validate(medicoSchema), medicoController.atualizarMedico);
+router.delete('/medicos/:id', isAuthenticated, medicoController.deletarMedico);
 
-router.post('/medicos', isAuthenticated, validate(medicoSchema), async (req, res, next) => {
-  try {
-    const novoMedico = await medico.create(req.body);
-    res.status(201).json({ status: 201, message: 'Médico cadastrado com sucesso!', medico: novoMedico });
-  } catch (err) {
-    next(err);
-  }
-});
-
-// Deletar médico + notificação por e-mail
+// ----------------- DELETAR MÉDICO -----------------
 router.delete('/medicos/:id', isAuthenticated, async (req, res, next) => {
   try {
     const medico_id = Number(req.params.id);
-    if (isNaN(medico_id)) return res.status(400).json({ status: 400, message: 'ID inválido' });
+    if (isNaN(medico_id)) {
+      return res.status(400).json({ status: 400, message: 'ID inválido' });
+    }
 
+    // Buscar médico antes de deletar
     const medicoParaExcluir = await medico.readById(medico_id);
-    if (!medicoParaExcluir) return res.status(404).json({ status: 404, message: 'Médico não encontrado' });
+    if (!medicoParaExcluir) {
+      return res.status(404).json({ status: 404, message: 'Médico não encontrado' });
+    }
 
+    // Deletar do banco
     await medico.remove(medico_id);
 
-    // ENVIAR E-MAIL AO ADMIN
-    await emailService.notifyMedicoExcluido('admin@exemplo.com', medicoParaExcluir);
+    // Enviar e-mail ao administrador
+    await emailService.sendMedicoRemovidoEmail('admin@viver.com', medicoParaExcluir.nome);
 
-    res.json({ status: 200, message: 'Médico excluído com sucesso!' });
+    console.log(`🗑 Médico removido: ${medicoParaExcluir.nome}`);
+
+    res.json({ status: 200, message: 'Médico excluído com sucesso e e-mail enviado!' });
+
   } catch (err) {
     next(err);
   }
@@ -199,5 +198,6 @@ router.use((err, req, res, next) => {
   console.error(err);
   res.status(500).json({ status: 500, message: 'Erro interno no servidor' });
 });
+
 
 export default router;

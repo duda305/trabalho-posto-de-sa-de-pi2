@@ -2,6 +2,9 @@ import express from 'express';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import { z } from 'zod';
+import multer from 'multer';
+import path from 'path';
+import fs from 'fs';
 
 import medico from './models/medico.js';
 import usuario from './models/usuario.js';
@@ -17,7 +20,6 @@ import { isAuthenticated } from './middleware/auth.js';
 import { validate } from './middleware/validate.js';
 import emailService from './services/emailService.js';
 import medicoController from './controllers/medicoController.js';
-
 
 const router = express.Router();
 
@@ -52,9 +54,22 @@ const medicoSchema = z.object({
     telefone: z.string().min(1, 'Telefone é obrigatório'),
   }),
 });
-// ----------------- USUÁRIOS -----------------
 
-// Listar todos (protegido)
+// ----------------- CONFIG MULTER PARA AVATAR -----------------
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const uploadDir = './public/imgs/profile';
+    if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+    cb(null, uploadDir);
+  },
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname);
+    cb(null, `avatar_${req.userId}${ext}`);
+  },
+});
+const upload = multer({ storage });
+
+// ----------------- USUÁRIOS -----------------
 router.get('/usuarios', isAuthenticated, async (req, res, next) => {
   try {
     const usuarios = await usuario.read(req.query);
@@ -64,7 +79,6 @@ router.get('/usuarios', isAuthenticated, async (req, res, next) => {
   }
 });
 
-// Obter meu perfil (protegido)
 router.get('/usuarios/me', isAuthenticated, async (req, res, next) => {
   try {
     const user = await usuario.readById(req.userId);
@@ -75,7 +89,6 @@ router.get('/usuarios/me', isAuthenticated, async (req, res, next) => {
   }
 });
 
-// Criar usuário (signup) + e-mail
 router.post('/usuarios', validate(usuarioSchema), async (req, res, next) => {
   try {
     const { nome, email, senha } = req.body;
@@ -88,7 +101,6 @@ router.post('/usuarios', validate(usuarioSchema), async (req, res, next) => {
     const senhaCriptografada = await bcrypt.hash(senha, 10);
     const novoUsuario = await usuario.create({ nome, email, senha: senhaCriptografada });
 
-    // ENVIAR E-MAIL DE BOAS-VINDAS
     await emailService.createNewUser(novoUsuario.email);
 
     const { senha: _, ...usuarioSemSenha } = novoUsuario;
@@ -98,7 +110,6 @@ router.post('/usuarios', validate(usuarioSchema), async (req, res, next) => {
   }
 });
 
-// Atualizar usuário (protegido)
 router.put('/usuarios/:id', isAuthenticated, validate(usuarioSchema), async (req, res, next) => {
   try {
     const usuario_id = Number(req.params.id);
@@ -119,7 +130,6 @@ router.put('/usuarios/:id', isAuthenticated, validate(usuarioSchema), async (req
   }
 });
 
-// Deletar usuário (protegido)
 router.delete('/usuarios/:id', isAuthenticated, async (req, res, next) => {
   try {
     const usuario_id = Number(req.params.id);
@@ -150,40 +160,47 @@ router.post('/signin', validate(loginSchema), async (req, res, next) => {
   }
 });
 
+// ----------------- AVATAR DO USUÁRIO -----------------
+router.post('/usuarios/image', isAuthenticated, upload.single('image'), async (req, res, next) => {
+  try {
+    if (!req.file) return res.status(400).json({ status: 400, message: 'Arquivo não enviado' });
+
+    const pathDB = `/imgs/profile/${req.file.filename}`;
+    const existingImage = await prisma.image.findUnique({ where: { usuarioId: req.userId } });
+
+    if (existingImage) {
+      return res.status(409).json({ status: 409, message: 'Usuário já possui avatar. Use PUT para atualizar.' });
+    }
+
+    const newImage = await prisma.image.create({ data: { usuarioId: req.userId, path: pathDB } });
+    res.status(201).json({ status: 201, message: 'Avatar criado com sucesso', image: newImage });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.put('/usuarios/image', isAuthenticated, upload.single('image'), async (req, res, next) => {
+  try {
+    if (!req.file) return res.status(400).json({ status: 400, message: 'Arquivo não enviado' });
+
+    const pathDB = `/imgs/profile/${req.file.filename}`;
+    const updatedImage = await prisma.image.upsert({
+      where: { usuarioId: req.userId },
+      update: { path: pathDB },
+      create: { usuarioId: req.userId, path: pathDB },
+    });
+
+    res.json({ status: 200, message: 'Avatar atualizado com sucesso', image: updatedImage });
+  } catch (err) {
+    next(err);
+  }
+});
+
 // ----------------- MÉDICOS -----------------
 router.get('/medicos', isAuthenticated, medicoController.listarMedicos);
 router.post('/medicos', isAuthenticated, validate(medicoSchema), medicoController.criarMedico);
 router.put('/medicos/:id', isAuthenticated, validate(medicoSchema), medicoController.atualizarMedico);
 router.delete('/medicos/:id', isAuthenticated, medicoController.deletarMedico);
-
-// ----------------- DELETAR MÉDICO -----------------
-router.delete('/medicos/:id', isAuthenticated, async (req, res, next) => {
-  try {
-    const medico_id = Number(req.params.id);
-    if (isNaN(medico_id)) {
-      return res.status(400).json({ status: 400, message: 'ID inválido' });
-    }
-
-    // Buscar médico antes de deletar
-    const medicoParaExcluir = await medico.readById(medico_id);
-    if (!medicoParaExcluir) {
-      return res.status(404).json({ status: 404, message: 'Médico não encontrado' });
-    }
-
-    // Deletar do banco
-    await medico.remove(medico_id);
-
-    // Enviar e-mail ao administrador
-    await emailService.sendMedicoRemovidoEmail('admin@viver.com', medicoParaExcluir.nome);
-
-    console.log(`🗑 Médico removido: ${medicoParaExcluir.nome}`);
-
-    res.json({ status: 200, message: 'Médico excluído com sucesso e e-mail enviado!' });
-
-  } catch (err) {
-    next(err);
-  }
-});
 
 // ----------------- TRATAMENTO DE ERROS -----------------
 router.use((err, req, res, next) => {
@@ -198,6 +215,5 @@ router.use((err, req, res, next) => {
   console.error(err);
   res.status(500).json({ status: 500, message: 'Erro interno no servidor' });
 });
-
 
 export default router;

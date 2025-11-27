@@ -11,11 +11,30 @@
 ### USUARIOS
 ### ==============================
 
-# Read User
-GET {{host}}/usuarios/{{usuarioId}}
+# Login (signin)
+POST {{host}}/signin
+Content-Type: application/json
+
+{
+  "email": "maria.silva@hospitalpb.com",
+  "senha": "novaSenha123"
+}
+
+# Obter perfil do usuário logado
+GET {{host}}/usuarios/me
 Authorization: Bearer {{token}}
 
-# Update User
+# Criar usuário
+POST {{host}}/usuarios
+Content-Type: application/json
+
+{
+  "nome": "Maria Silva",
+  "email": "maria.silva@hospitalpb.com",
+  "senha": "novaSenha123"
+}
+
+# Atualizar usuário
 PUT {{host}}/usuarios/{{usuarioId}}
 Authorization: Bearer {{token}}
 Content-Type: application/json
@@ -23,20 +42,46 @@ Content-Type: application/json
 {
   "nome": "Maria Almeida Silva",
   "email": "maria.silva@hospitalpb.com",
-  "senha": "novaSenha123",
-  "data_cadastro": "2025-02-22"
+  "senha": "novaSenha123"
 }
 
-# Delete User
+# Deletar usuário
 DELETE {{host}}/usuarios/{{usuarioId}}
 Authorization: Bearer {{token}}
 
+### ==============================
+### UPLOAD AVATAR USUÁRIO
+### ==============================
+
+# Criar avatar
+POST {{host}}/usuarios/image
+Authorization: Bearer {{token}}
+Content-Type: multipart/form-data; boundary="boundary"
+
+--boundary
+Content-Disposition: form-data; name="image"; filename="avatar.png"
+Content-Type: image/png
+
+< ./public/imgs/profile/avatar.png
+--boundary--
+
+# Atualizar avatar
+PUT {{host}}/usuarios/image
+Authorization: Bearer {{token}}
+Content-Type: multipart/form-data; boundary="boundary"
+
+--boundary
+Content-Disposition: form-data; name="image"; filename="avatar.png"
+Content-Type: image/png
+
+< ./public/imgs/profile/avatar.png
+--boundary--
 
 ### ==============================
 ### MEDICOS
 ### ==============================
 
-# Create Medico
+# Criar Médico
 POST {{host}}/medicos
 Authorization: Bearer {{token}}
 Content-Type: application/json
@@ -48,11 +93,11 @@ Content-Type: application/json
   "telefone": "83991234567"
 }
 
-# Read Medico
+# Ler Médico
 GET {{host}}/medicos/{{medicoId}}
 Authorization: Bearer {{token}}
 
-# Update Medico
+# Atualizar Médico
 PUT {{host}}/medicos/{{medicoId}}
 Authorization: Bearer {{token}}
 Content-Type: application/json
@@ -64,10 +109,9 @@ Content-Type: application/json
   "telefone": "83991234567"
 }
 
-# Delete Medico
+# Deletar Médico
 DELETE {{host}}/medicos/{{medicoId}}
 Authorization: Bearer {{token}}
-
 
 ### ==============================
 ### ESPECIALIDADES

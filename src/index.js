@@ -1,10 +1,12 @@
+import 'express-async-errors';
+import dotenv from 'dotenv';
 import express from 'express';
 import morgan from 'morgan';
+import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
-import dotenv from 'dotenv';
-import cors from 'cors';
+
 import router from './routes.js';
 
 dotenv.config();
@@ -14,32 +16,44 @@ const __dirname = dirname(__filename);
 
 const app = express();
 
+// ----------------- MIDDLEWARE -----------------
 app.use(morgan('tiny'));
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-// CORS – OBRIGATÓRIO NO CODESPACES
 app.use(cors({
   origin: '*',
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true,
 }));
 
-// Serve a pasta public estática
+// Serve arquivos estáticos da pasta public
 app.use(express.static(path.join(__dirname, '../public')));
 
+// ----------------- ROTAS -----------------
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '../public/projeto/index.html'));
 });
 
-// Prefixo da API
+// Todas as rotas da API
 app.use('/api', router);
 
-// Erros globais
+// ----------------- TRATAMENTO GLOBAL DE ERROS -----------------
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  res.status(err.status || 500).json({ message: err.message || 'Internal server error' });
+
+  if (err.name === 'UnauthorizedError') {
+    return res.status(401).json({ message: 'Token inválido ou ausente' });
+  }
+
+  res.status(err.status || 500).json({
+    status: err.status || 500,
+    message: err.message || 'Internal server error',
+  });
 });
 
+// ----------------- INICIAR SERVIDOR -----------------
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Servidor rodando em http://localhost:${PORT}`);

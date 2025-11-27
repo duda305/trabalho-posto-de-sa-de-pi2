@@ -1,33 +1,73 @@
 import Auth from './auth.js';
 
-const domain = '/api'; // importante: garante que todas as requisições vão para /api
+const domain = '/api'; // prefixo da API
 
+// Função para tratar respostas da API
 async function handleResponse(res) {
   if (!res.ok) {
-    if (res.status === 401) Auth.signout(); // se não autorizado, desloga
+    if (res.status === 401) Auth.signout(); // desloga automaticamente
     const errorText = await res.text();
     throw new Error(`Erro ${res.status}: ${errorText}`);
   }
-  return await res.json();
+  return res.status !== 204 ? await res.json() : null; // 204 No Content
 }
 
+// Retorna o header de autenticação se necessário
 function getAuthHeader(auth) {
   return auth ? { Authorization: `Bearer ${Auth.getToken()}` } : {};
 }
 
-async function create(resource, data, auth = true) {
+// -------------------- MÉTODOS --------------------
+
+async function create(resource, data, auth = true, formData = false) {
   const url = `${domain}${resource}`;
   const config = {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      ...getAuthHeader(auth),
-    },
-    body: JSON.stringify(data),
+    headers: { ...getAuthHeader(auth) },
+    body: formData ? data : JSON.stringify(data),
+  };
+
+  if (!formData) config.headers['Content-Type'] = 'application/json; charset=UTF-8';
+
+  const res = await fetch(url, config);
+  return handleResponse(res);
+}
+
+async function read(resource, auth = true) {
+  const url = `${domain}${resource}`;
+  const config = {
+    method: 'GET',
+    headers: { ...getAuthHeader(auth) },
   };
 
   const res = await fetch(url, config);
-  return await handleResponse(res);
+  return handleResponse(res);
 }
 
-export default { create };
+async function update(resource, data, auth = true, formData = false) {
+  const url = `${domain}${resource}`;
+  const config = {
+    method: 'PUT',
+    headers: { ...getAuthHeader(auth) },
+    body: formData ? data : JSON.stringify(data),
+  };
+
+  if (!formData) config.headers['Content-Type'] = 'application/json; charset=UTF-8';
+
+  const res = await fetch(url, config);
+  return handleResponse(res);
+}
+
+async function remove(resource, auth = true) {
+  const url = `${domain}${resource}`;
+  const config = {
+    method: 'DELETE',
+    headers: { ...getAuthHeader(auth) },
+  };
+
+  const res = await fetch(url, config);
+  return handleResponse(res);
+}
+
+// -------------------- EXPORT --------------------
+export default { create, read, update, remove };

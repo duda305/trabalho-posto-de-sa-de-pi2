@@ -17,10 +17,18 @@ model usuario {
   email         String         @unique
   senha         String
   data_cadastro DateTime       @default(now())
-
+  image        Image?
   relatorio    relatorio[]
   notificacao  notificacao[]
 }
+
+model Image {
+  id         String   @id @default(uuid())
+  path       String
+  usuarioId  Int      @unique
+  usuario    usuario  @relation(fields: [usuarioId], references: [usuario_id])
+}
+
 
 model medico {
   medico_id       Int         @id @default(autoincrement())

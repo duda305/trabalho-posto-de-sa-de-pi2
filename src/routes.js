@@ -21,7 +21,7 @@ import notificacao from './models/notificacao.js';
 import { isAuthenticated } from './middleware/auth.js';
 import { validate } from './middleware/validate.js';
 import emailService from './services/emailService.js';
-import medicoController from '../controllers/medicoController.js';
+import medicoController from './controllers/medicoController.js';
 
 const router = express.Router();
 
@@ -69,7 +69,7 @@ const storage = multer.diskStorage({
     cb(null, `avatar_${req.userId}${ext}`);
   },
 });
-const upload = multer({ storage });
+const uploadAvatar = multer({ storage });
 
 // ----------------- USUÁRIOS -----------------
 router.get('/usuarios', isAuthenticated, async (req, res, next) => {
@@ -163,7 +163,7 @@ router.post('/signin', validate(loginSchema), async (req, res, next) => {
 });
 
 // ----------------- AVATAR DO USUÁRIO -----------------
-router.post('/usuarios/image', isAuthenticated, upload.single('image'), async (req, res, next) => {
+router.post('/usuarios/image', isAuthenticated, uploadAvatar.single('image'), async (req, res, next) => {
   try {
     if (!req.file) return res.status(400).json({ status: 400, message: 'Arquivo não enviado' });
 

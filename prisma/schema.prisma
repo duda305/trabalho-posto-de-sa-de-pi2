@@ -36,6 +36,7 @@ model medico {
   nome            String
   disponibilidade String?
   telefone        String?
+  foto            String?
 
   especialidades  tem[]
   consultas       consulta[]

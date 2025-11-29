@@ -52,4 +52,22 @@ async function atualizarMedico(req, res) {
   }
 }
 
-export default { deletarMedico, listarMedicos, criarMedico, atualizarMedico };
+async function updateFoto(req, res) {
+  try {
+    const { id } = req.params;
+
+    if (!req.file) {
+      return res.status(400).json({ error: 'Nenhuma imagem enviada' });
+    }
+
+    const fotoPath = `/uploads/${req.file.filename}`;
+
+    const updated = await medicoModel.updateFoto(Number(id), fotoPath);
+
+    res.json({ message: 'Foto atualizada com sucesso', medico: updated });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}
+
+export default { deletarMedico, listarMedicos, criarMedico, atualizarMedico, updateFoto };

@@ -120,10 +120,6 @@ async function sendMedicoRemovidoEmail(to, nomeMedico) {
 
 
 
-/* ===============================
-   EXPORTAÇÃO DOS SERVIÇOS
-   =============================== */
-
 export default {
   createNewUser,
   sendMedicoRemovidoEmail

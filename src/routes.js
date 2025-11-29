@@ -5,6 +5,8 @@ import { z } from 'zod';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
+import { upload } from "./config/multer.js";
+
 
 import medico from './models/medico.js';
 import usuario from './models/usuario.js';
@@ -19,7 +21,7 @@ import notificacao from './models/notificacao.js';
 import { isAuthenticated } from './middleware/auth.js';
 import { validate } from './middleware/validate.js';
 import emailService from './services/emailService.js';
-import medicoController from './controllers/medicoController.js';
+import medicoController from '../controllers/medicoController.js';
 
 const router = express.Router();
 
@@ -197,11 +199,56 @@ router.put('/usuarios/image', isAuthenticated, upload.single('image'), async (re
 });
 
 // ----------------- MÉDICOS -----------------
-router.get('/medicos', isAuthenticated, medicoController.listarMedicos);
-router.post('/medicos', isAuthenticated, validate(medicoSchema), medicoController.criarMedico);
-router.put('/medicos/:id', isAuthenticated, validate(medicoSchema), medicoController.atualizarMedico);
-router.delete('/medicos/:id', isAuthenticated, medicoController.deletarMedico);
+const storageMedicos = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const dir = './public/projeto/img';
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    cb(null, dir);
+  },
+  filename: (req, file, cb) => {
+    const medicoId = req.params.id;
+    const ext = path.extname(file.originalname);
 
+    // nome final = foto_medicoID.png
+    cb(null, `medico_${medicoId}${ext}`);
+  }
+});
+
+const uploadMedico = multer({ storage: storageMedicos });
+
+// ROTA PARA ALTERAR FOTO DO MÉDICO
+router.put(
+  "/medicos/:id/foto",
+  isAuthenticated,
+  uploadMedico.single("foto"),
+  async (req, res) => {
+
+    try {
+      const medico_id = Number(req.params.id);
+
+      if (isNaN(medico_id)) {
+        return res.status(400).json({ error: "ID inválido" });
+      }
+
+      if (!req.file) {
+        return res.status(400).json({ error: "Nenhuma foto enviada" });
+      }
+
+      const fotoPath = `/projeto/img/${req.file.filename}`;
+
+      const atualizado = await medico.updateFoto(medico_id, fotoPath);
+
+      res.json({
+        message: "Foto atualizada com sucesso!",
+        medico: atualizado,
+      });
+
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Erro ao enviar foto" });
+    }
+  }
+);
 // ----------------- TRATAMENTO DE ERROS -----------------
 router.use((err, req, res, next) => {
   if (err instanceof HTTPError) {

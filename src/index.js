@@ -28,6 +28,8 @@ app.use(cors({
   credentials: true,
 }));
 
+app.use("/uploads", express.static("uploads"));
+
 // Serve arquivos estáticos da pasta public
 app.use(express.static(path.join(__dirname, '../public')));
 

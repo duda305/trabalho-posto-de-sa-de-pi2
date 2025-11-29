@@ -22,17 +22,18 @@ async function readById(medico_id) {
   return medico || null;
 }
 
-async function update({ medico_id, nome, CRM, disponibilidade, telefone }) {
-  if (!medico_id || !nome || !CRM || !disponibilidade || !telefone) {
-    throw new Error('Dados incompletos para atualização do médico');
-  }
-
-  const updatedMedico = await prisma.medico.update({
+async function update(medico_id, data) {
+  return prisma.medico.update({
     where: { medico_id },
-    data: { nome, CRM, disponibilidade, telefone },
+    data,
   });
+}
 
-  return updatedMedico;
+async function updateFoto(medico_id, foto) {
+  return prisma.medico.update({
+    where: { medico_id },
+    data: { foto },
+  });
 }
 
 async function remove(medico_id) {
@@ -42,4 +43,11 @@ async function remove(medico_id) {
   return true;
 }
 
-export default { create, read, readById, update, remove };
+export default { 
+  create, 
+  read, 
+  readById, 
+  update,     
+  updateFoto, 
+  remove 
+};

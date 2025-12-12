@@ -1,10 +1,15 @@
-import { PrismaClient } from '../generated/prisma/client.js';
+import { PrismaClient } from '../src/generated/prisma/client.js';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const prisma = new PrismaClient();
 
+/**
+ * Converte campos DateTime vindos como string para Date
+ */
 function converterDatas(array, camposDeData) {
+  if (!array) return [];
   return array.map(item => {
     const novo = { ...item };
     camposDeData.forEach(campo => {
@@ -15,66 +20,122 @@ function converterDatas(array, camposDeData) {
 }
 
 async function main() {
-  const filePath = resolve('prisma', 'seeders.json');
+  // ✅ Caminho absoluto correto do seeders.json
+  const __filename = fileURLToPath(import.meta.url);
+  const __dirname = resolve(__filename, '..');
+  const filePath = resolve(__dirname, 'seeders.json');
+
   const seedData = JSON.parse(readFileSync(filePath, 'utf-8'));
 
-  // ORDEM CERTA COM skipDuplicates
-  await prisma.usuario.createMany({
-    data: converterDatas(seedData.usuarios, ['data_cadastro']),
-    skipDuplicates: true
-  });
+  // =========================
+  // USUÁRIOS
+  // =========================
+  if (seedData.usuarios?.length) {
+    await prisma.usuario.createMany({
+      data: converterDatas(seedData.usuarios, ['data_cadastro'])
+    });
+  }
 
-  await prisma.especialidade.createMany({
-    data: seedData.especialidades,
-    skipDuplicates: true
-  });
+  // =========================
+  // IMAGENS
+  // =========================
+  if (seedData.images?.length) {
+    await prisma.image.createMany({
+      data: seedData.images
+    });
+  }
 
-  await prisma.medico.createMany({
-    data: seedData.medicos,
-    skipDuplicates: true
-  });
+  // =========================
+  // ESPECIALIDADES
+  // =========================
+  if (seedData.especialidades?.length) {
+    await prisma.especialidade.createMany({
+      data: seedData.especialidades
+    });
+  }
 
-  await prisma.tem.createMany({
-    data: seedData.tem,
-    skipDuplicates: true
-  });
+  // =========================
+  // MÉDICOS
+  // =========================
+  if (seedData.medicos?.length) {
+    await prisma.medico.createMany({
+      data: seedData.medicos
+    });
+  }
 
-  await prisma.paciente.createMany({
-    data: seedData.pacientes,
-    skipDuplicates: true
-  });
+  // =========================
+  // RELAÇÃO TEM
+  // =========================
+  if (seedData.tem?.length) {
+    await prisma.tem.createMany({
+      data: seedData.tem
+    });
+  }
 
-  await prisma.consulta.createMany({
-    data: converterDatas(seedData.consultas, ['data_consulta']),
-    skipDuplicates: true
-  });
+  // =========================
+  // PACIENTES
+  // =========================
+  if (seedData.pacientes?.length) {
+    await prisma.paciente.createMany({
+      data: seedData.pacientes
+    });
+  }
 
-  await prisma.medicamento.createMany({
-    data: converterDatas(seedData.medicamentos, ['data_validade']),
-    skipDuplicates: true
-  });
+  // =========================
+  // CONSULTAS
+  // =========================
+  if (seedData.consultas?.length) {
+    await prisma.consulta.createMany({
+      data: converterDatas(seedData.consultas, ['data_consulta'])
+    });
+  }
 
-  await prisma.pede.createMany({
-    data: seedData.pede,
-    skipDuplicates: true
-  });
+  // =========================
+  // MEDICAMENTOS
+  // =========================
+  if (seedData.medicamentos?.length) {
+    await prisma.medicamento.createMany({
+      data: converterDatas(seedData.medicamentos, ['data_validade'])
+    });
+  }
 
-  await prisma.estoque.createMany({
-    data: seedData.estoque,
-    skipDuplicates: true
-  });
+  // =========================
+  // PEDE
+  // =========================
+  if (seedData.pede?.length) {
+    await prisma.pede.createMany({
+      data: seedData.pede
+    });
+  }
 
-  await prisma.relatorio.createMany({
-    data: seedData.relatorios,
-    skipDuplicates: true
-  });
+  // =========================
+  // ESTOQUE
+  // =========================
+  if (seedData.estoque?.length) {
+    await prisma.estoque.createMany({
+      data: seedData.estoque
+    });
+  }
 
-  await prisma.notificacao.createMany({
-    data: converterDatas(seedData.notificacoes, ['data_envio']),
-    skipDuplicates: true
-  });
+  // =========================
+  // RELATÓRIOS
+  // =========================
+  if (seedData.relatorios?.length) {
+    await prisma.relatorio.createMany({
+      data: seedData.relatorios
+    });
+  }
 
-  console.log('✅ Seed concluído com sucesso!');
+  // =========================
+  // NOTIFICAÇÕES
+  // =========================
+  if (seedData.notificacoes?.length) {
+    await prisma.notificacao.createMany({
+      data: converterDatas(seedData.notificacoes, ['data_envio'])
+    });
+  }
+
+  console.log('✅ Seed executado com sucesso!');
 }
 
 main()

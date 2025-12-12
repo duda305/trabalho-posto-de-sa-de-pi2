@@ -5,26 +5,17 @@ import { z } from 'zod';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
-import { upload } from "./config/multer.js";
-
-
-import medico from './models/medico.js';
+import { PrismaClient } from './generated/prisma/client.js';
 import usuario from './models/usuario.js';
-import especialidade from './models/especialidade.js';
-import paciente from './models/paciente.js';
-import consulta from './models/consulta.js';
-import medicamento from './models/medicamento.js';
-import estoque from './models/estoque.js';
-import relatorio from './models/relatorio.js';
-import notificacao from './models/notificacao.js';
-
+import medico from './models/medico.js';
 import { isAuthenticated } from './middleware/auth.js';
 import { validate } from './middleware/validate.js';
 import emailService from './services/emailService.js';
-import medicoController from './controllers/medicoController.js';
 
+const prisma = new PrismaClient();
 const router = express.Router();
 
+// ----------------- ERRO PERSONALIZADO -----------------
 class HTTPError extends Error {
   constructor(message, statusCode) {
     super(message);
@@ -48,30 +39,36 @@ const loginSchema = z.object({
   }),
 });
 
-const medicoSchema = z.object({
-  body: z.object({
-    nome: z.string().min(1, 'Nome é obrigatório'),
-    CRM: z.string().min(1, 'CRM é obrigatório'),
-    disponibilidade: z.string().min(1, 'Disponibilidade é obrigatória'),
-    telefone: z.string().min(1, 'Telefone é obrigatório'),
-  }),
-});
-
-// ----------------- CONFIG MULTER PARA AVATAR -----------------
-const storage = multer.diskStorage({
+// ----------------- MULTER PARA AVATAR -----------------
+const storageAvatar = multer.diskStorage({
   destination: (req, file, cb) => {
-    const uploadDir = './public/imgs/profile';
-    if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
-    cb(null, uploadDir);
+    const dir = './public/imgs/profile';
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    cb(null, dir);
   },
   filename: (req, file, cb) => {
     const ext = path.extname(file.originalname);
     cb(null, `avatar_${req.userId}${ext}`);
   },
 });
-const uploadAvatar = multer({ storage });
+const uploadAvatar = multer({ storage: storageAvatar });
 
-// ----------------- USUÁRIOS -----------------
+// ----------------- MULTER PARA FOTO MÉDICO -----------------
+const storageMedico = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const dir = './public/projeto/img';
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    cb(null, dir);
+  },
+  filename: (req, file, cb) => {
+    const medicoId = req.params.id;
+    const ext = path.extname(file.originalname);
+    cb(null, `medico_${medicoId}${ext}`);
+  },
+});
+const uploadMedico = multer({ storage: storageMedico });
+
+// ----------------- ROTAS USUÁRIO -----------------
 router.get('/usuarios', isAuthenticated, async (req, res, next) => {
   try {
     const usuarios = await usuario.read(req.query);
@@ -95,18 +92,16 @@ router.post('/usuarios', validate(usuarioSchema), async (req, res, next) => {
   try {
     const { nome, email, senha } = req.body;
 
-    const usuarioExistente = await usuario.readByEmail(email);
-    if (usuarioExistente) {
-      return res.status(409).json({ status: 409, message: 'Email já cadastrado' });
-    }
+    const existingUser = await usuario.readByEmail(email);
+    if (existingUser) return res.status(409).json({ status: 409, message: 'Email já cadastrado' });
 
-    const senhaCriptografada = await bcrypt.hash(senha, 10);
-    const novoUsuario = await usuario.create({ nome, email, senha: senhaCriptografada });
+    const hashedPassword = await bcrypt.hash(senha, 10);
+    const newUser = await usuario.create({ nome, email, senha: hashedPassword });
 
-    await emailService.createNewUser(novoUsuario.email);
+  
 
-    const { senha: _, ...usuarioSemSenha } = novoUsuario;
-    res.status(201).json({ status: 201, message: 'Usuário criado com sucesso!', usuario: usuarioSemSenha });
+    const { senha: _, ...userWithoutPassword } = newUser;
+    res.status(201).json({ status: 201, message: 'Usuário criado com sucesso!', usuario: userWithoutPassword });
   } catch (err) {
     next(err);
   }
@@ -118,16 +113,14 @@ router.put('/usuarios/:id', isAuthenticated, validate(usuarioSchema), async (req
     if (isNaN(usuario_id)) return res.status(400).json({ status: 400, message: 'ID inválido' });
 
     const { nome, email, senha } = req.body;
-    const senhaCriptografada = await bcrypt.hash(senha, 10);
+    const hashedPassword = await bcrypt.hash(senha, 10);
 
-    const usuarioAtualizado = await usuario.update({ usuario_id, nome, email, senha: senhaCriptografada });
-    const { senha: _, ...usuarioSemSenha } = usuarioAtualizado;
+    const updatedUser = await usuario.update({ usuario_id, nome, email, senha: hashedPassword });
+    const { senha: _, ...userWithoutPassword } = updatedUser;
 
-    res.json({ status: 200, message: 'Usuário atualizado com sucesso!', usuario: usuarioSemSenha });
+    res.json({ status: 200, message: 'Usuário atualizado com sucesso!', usuario: userWithoutPassword });
   } catch (err) {
-    if (err.message === 'Email já cadastrado') {
-      return res.status(409).json({ status: 409, message: err.message });
-    }
+    if (err.message === 'Email já cadastrado') return res.status(409).json({ status: 409, message: err.message });
     next(err);
   }
 });
@@ -152,17 +145,19 @@ router.post('/signin', validate(loginSchema), async (req, res, next) => {
 
     if (!user) return res.status(401).json({ status: 401, message: 'Usuário não encontrado' });
 
-    const senhaValida = await bcrypt.compare(senha, user.senha);
-    if (!senhaValida) return res.status(401).json({ status: 401, message: 'Senha incorreta' });
+    const isValid = await bcrypt.compare(senha, user.senha);
+    if (!isValid) return res.status(401).json({ status: 401, message: 'Senha incorreta' });
 
     const token = jwt.sign({ userId: user.usuario_id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-    res.json({ status: 200, auth: true, token });
+    const { senha: _, ...userWithoutPassword } = user;
+
+    res.json({ status: 200, token, usuario: userWithoutPassword });
   } catch (err) {
     next(err);
   }
 });
 
-// ----------------- AVATAR DO USUÁRIO -----------------
+// ----------------- AVATAR -----------------
 router.post('/usuarios/image', isAuthenticated, uploadAvatar.single('image'), async (req, res, next) => {
   try {
     if (!req.file) return res.status(400).json({ status: 400, message: 'Arquivo não enviado' });
@@ -181,7 +176,7 @@ router.post('/usuarios/image', isAuthenticated, uploadAvatar.single('image'), as
   }
 });
 
-router.put('/usuarios/image', isAuthenticated, upload.single('image'), async (req, res, next) => {
+router.put('/usuarios/image', isAuthenticated, uploadAvatar.single('image'), async (req, res, next) => {
   try {
     if (!req.file) return res.status(400).json({ status: 400, message: 'Arquivo não enviado' });
 
@@ -198,66 +193,28 @@ router.put('/usuarios/image', isAuthenticated, upload.single('image'), async (re
   }
 });
 
-// ----------------- MÉDICOS -----------------
-const storageMedicos = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const dir = './public/projeto/img';
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-    cb(null, dir);
-  },
-  filename: (req, file, cb) => {
-    const medicoId = req.params.id;
-    const ext = path.extname(file.originalname);
+// ----------------- MÉDICO -----------------
+router.put('/medicos/:id/foto', isAuthenticated, uploadMedico.single('foto'), async (req, res) => {
+  try {
+    const medico_id = Number(req.params.id);
+    if (isNaN(medico_id)) return res.status(400).json({ status: 400, message: 'ID inválido' });
 
-    // nome final = foto_medicoID.png
-    cb(null, `medico_${medicoId}${ext}`);
+    if (!req.file) return res.status(400).json({ status: 400, message: 'Nenhuma foto enviada' });
+
+    const fotoPath = `/projeto/img/${req.file.filename}`;
+    const updatedMedico = await medico.updateFoto(medico_id, fotoPath);
+
+    res.json({ status: 200, message: 'Foto atualizada com sucesso!', medico: updatedMedico });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ status: 500, message: 'Erro ao enviar foto' });
   }
 });
 
-const uploadMedico = multer({ storage: storageMedicos });
-
-// ROTA PARA ALTERAR FOTO DO MÉDICO
-router.put(
-  "/medicos/:id/foto",
-  isAuthenticated,
-  uploadMedico.single("foto"),
-  async (req, res) => {
-
-    try {
-      const medico_id = Number(req.params.id);
-
-      if (isNaN(medico_id)) {
-        return res.status(400).json({ error: "ID inválido" });
-      }
-
-      if (!req.file) {
-        return res.status(400).json({ error: "Nenhuma foto enviada" });
-      }
-
-      const fotoPath = `/projeto/img/${req.file.filename}`;
-
-      const atualizado = await medico.updateFoto(medico_id, fotoPath);
-
-      res.json({
-        message: "Foto atualizada com sucesso!",
-        medico: atualizado,
-      });
-
-    } catch (err) {
-      console.error(err);
-      res.status(500).json({ error: "Erro ao enviar foto" });
-    }
-  }
-);
 // ----------------- TRATAMENTO DE ERROS -----------------
-router.use((err, req, res, next) => {
-  if (err instanceof HTTPError) {
-    return res.status(err.statusCode).json({ status: err.statusCode, message: err.message });
-  }
-
-  if (err.name === 'ZodError') {
-    return res.status(400).json({ status: 400, message: 'Erro de validação', errors: err.errors });
-  }
+router.use((err, req, res,) => {
+  if (err instanceof HTTPError) return res.status(err.statusCode).json({ status: err.statusCode, message: err.message });
+  if (err.name === 'ZodError') return res.status(400).json({ status: 400, message: 'Erro de validação', errors: err.errors });
 
   console.error(err);
   res.status(500).json({ status: 500, message: 'Erro interno no servidor' });

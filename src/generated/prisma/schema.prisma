@@ -1,0 +1,128 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model usuario {
+  usuario_id    Int           @id @default(autoincrement())
+  nome          String
+  email         String        @unique
+  senha         String
+  data_cadastro DateTime      @default(now())
+  image         image?
+  relatorio     relatorio[]
+  notificacao   notificacao[]
+}
+
+model image {
+  id        String  @id @default(uuid())
+  path      String
+  usuarioId Int     @unique
+  usuario   usuario @relation(fields: [usuarioId], references: [usuario_id])
+}
+
+model medico {
+  medico_id       Int     @id @default(autoincrement())
+  CRM             String  @unique
+  nome            String
+  disponibilidade String?
+  telefone        String?
+  foto            String?
+
+  especialidades tem[]
+  consultas      consulta[]
+}
+
+model especialidade {
+  especialidade_id Int    @id @default(autoincrement())
+  nome             String
+
+  medico tem[]
+}
+
+model tem {
+  medico_id        Int
+  especialidade_id Int
+
+  medico        medico        @relation(fields: [medico_id], references: [medico_id])
+  especialidade especialidade @relation(fields: [especialidade_id], references: [especialidade_id])
+
+  @@id([medico_id, especialidade_id])
+}
+
+model paciente {
+  paciente_id Int     @id @default(autoincrement())
+  nome        String
+  telefone    String?
+  bairro      String?
+  cidade      String?
+  endereco    String?
+  CEP         String?
+
+  consulta consulta[]
+}
+
+model consulta {
+  consulta_id   Int      @id @default(autoincrement())
+  data_consulta DateTime
+  observacao    String?
+  medico_id     Int
+  paciente_id   Int
+
+  medico       medico   @relation(fields: [medico_id], references: [medico_id])
+  paciente     paciente @relation(fields: [paciente_id], references: [paciente_id])
+  medicamentos pede[]
+}
+
+model pede {
+  consulta_id    Int
+  medicamento_id Int
+
+  consulta    consulta    @relation(fields: [consulta_id], references: [consulta_id])
+  medicamento medicamento @relation(fields: [medicamento_id], references: [medicamento_id])
+
+  @@id([consulta_id, medicamento_id])
+}
+
+model medicamento {
+  medicamento_id Int       @id @default(autoincrement())
+  nome           String
+  fabricante     String?
+  data_validade  DateTime?
+
+  pedido  pede[]
+  estoque estoque[]
+}
+
+model estoque {
+  estoque_id     Int @id @default(autoincrement())
+  medicamento_id Int
+  quantidade     Int @default(0)
+
+  medicamento medicamento @relation(fields: [medicamento_id], references: [medicamento_id])
+}
+
+model relatorio {
+  relatorio_id      Int     @id @default(autoincrement())
+  usuario_id        Int
+  tipo_relatorio    String?
+  arquivo_relatorio String?
+
+  usuario usuario @relation(fields: [usuario_id], references: [usuario_id])
+}
+
+model notificacao {
+  notificacao_id Int       @id @default(autoincrement())
+  usuario_id     Int
+  tipo           String?
+  mensagens      String?
+  data_envio     DateTime?
+  status         String?
+
+  usuario usuario @relation(fields: [usuario_id], references: [usuario_id])
+}

@@ -1,6 +1,3 @@
-import API from './services/api.js';
-import Auth from './lib/auth.js';
-
 const form = document.querySelector('#upload-form');
 let formMethod;
 

@@ -1,12 +1,19 @@
 import nodemailer from 'nodemailer';
 
 async function mailConfig() {
-  if (process.env.NODE_ENV === 'development') {
-    // Cria conta de teste Ethereal
+  const isDev =
+    process.env.NODE_ENV === 'development' ||
+    process.env.NODE_ENV === undefined;
+
+  // ============================
+  // AMBIENTE DE DESENVOLVIMENTO
+  // ============================
+  if (isDev) {
     const testAccount = await nodemailer.createTestAccount();
 
-    console.log('ETHEREAL USER:', testAccount.user);
-    console.log('ETHEREAL PASS:', testAccount.pass);
+    console.log('📧 Ethereal account criada');
+    console.log('USER:', testAccount.user);
+    console.log('PASS:', testAccount.pass);
 
     return {
       host: 'smtp.ethereal.email',
@@ -19,7 +26,15 @@ async function mailConfig() {
     };
   }
 
-  // Para produção
+  // ============================
+  // AMBIENTE DE PRODUÇÃO
+  // ============================
+  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+    throw new Error(
+      'Configuração de e-mail inválida: EMAIL_USER ou EMAIL_PASS não definidos'
+    );
+  }
+
   return {
     host: process.env.EMAIL_HOST,
     port: Number(process.env.EMAIL_PORT),

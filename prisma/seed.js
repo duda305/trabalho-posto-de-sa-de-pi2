@@ -2,6 +2,7 @@ import { PrismaClient } from '../src/generated/prisma/client.js';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
 
@@ -20,7 +21,9 @@ function converterDatas(array, camposDeData) {
 }
 
 async function main() {
-  // ✅ Caminho absoluto correto do seeders.json
+  // =========================
+  // Caminho absoluto do seeders.json
+  // =========================
   const __filename = fileURLToPath(import.meta.url);
   const __dirname = resolve(__filename, '..');
   const filePath = resolve(__dirname, 'seeders.json');
@@ -28,11 +31,22 @@ async function main() {
   const seedData = JSON.parse(readFileSync(filePath, 'utf-8'));
 
   // =========================
-  // USUÁRIOS
+  // USUÁRIOS (com senha criptografada)
   // =========================
   if (seedData.usuarios?.length) {
+    const usuariosComSenhaHash = await Promise.all(
+      seedData.usuarios.map(async (u) => ({
+        ...u,
+        email: u.email.toLowerCase(),
+        senha: await bcrypt.hash(u.senha, 10),
+        data_cadastro: u.data_cadastro
+          ? new Date(u.data_cadastro)
+          : null
+      }))
+    );
+
     await prisma.usuario.createMany({
-      data: converterDatas(seedData.usuarios, ['data_cadastro'])
+      data: usuariosComSenhaHash
     });
   }
 
@@ -139,7 +153,7 @@ async function main() {
 }
 
 main()
-  .catch(e => {
+  .catch((e) => {
     console.error('❌ Erro no seed:', e);
     process.exit(1);
   })

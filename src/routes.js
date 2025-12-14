@@ -203,8 +203,28 @@ router.post(
       });
     }
 
+    // Busca usuário com imagem atual
+    const user = await prisma.usuario.findUnique({
+      where: { usuario_id: req.userId },
+      include: { image: true }
+    });
+
+    // Remove avatar antigo (se existir)
+    if (user?.image?.path) {
+      const oldImagePath = path.resolve(
+        'public',
+        user.image.path
+      );
+
+      if (fs.existsSync(oldImagePath)) {
+        fs.unlinkSync(oldImagePath);
+      }
+    }
+
+    // Novo caminho
     const imagePath = `projeto/img/${req.file.filename}`;
 
+    // Atualiza banco
     await prisma.usuario.update({
       where: { usuario_id: req.userId },
       data: {
@@ -223,6 +243,7 @@ router.post(
     });
   }
 );
+
 
 
 

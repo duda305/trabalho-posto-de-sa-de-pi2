@@ -1,70 +1,132 @@
+// ===============================
+// Elementos
+// ===============================
 const form = document.querySelector('#upload-form');
-let formMethod;
 
-// Função para carregar dados do usuário
-async function loadProfile() {
-  try {
-    const user = await API.read(`/usuarios/me`, true); // true = enviar token
+// ===============================
+// API helper
+// ===============================
+const API = {
+  async request(url, options = {}) {
+    const token = localStorage.getItem('token');
 
-    let imagePath;
+    const response = await fetch('/api' + url, {
+      ...options,
+      headers: {
+        Authorization: token ? `Bearer ${token}` : '',
+        ...options.headers
+      }
+    });
 
-    // Verifica se o usuário já possui imagem
-    if (user.image && user.image.path) {
-      imagePath = user.image.path;
-      formMethod = 'put';
-    } else {
-      imagePath = '/projeto/img/cara.png';
-      formMethod = 'post';
+    if (!response.ok) {
+      throw new Error(`Erro ${response.status}`);
     }
 
-    // Preenche dados no DOM
-    document.querySelector('#profile-name').innerText = user.nome;
-    document.querySelector('#user-name').innerText = user.nome;
-    document.querySelector('#profile-email').innerText = user.email;
-    document.querySelector('#profile-image').src = imagePath;
-    document.querySelector('#dropdown-avatar').src = imagePath;
+    return response.json();
+  },
 
-    // Guarda ID do usuário no formulário para upload
-    document.querySelector('#usuarioId').value = user.usuario_id;
+  read(url) {
+    return this.request(url, { method: 'GET' });
+  },
+
+  create(url, body, isFormData = false) {
+    return this.request(url, {
+      method: 'POST',
+      body,
+      headers: isFormData ? {} : { 'Content-Type': 'application/json' }
+    });
+  }
+};
+
+// ===============================
+// Token (APENAS leitura)
+// ===============================
+const token = localStorage.getItem('token');
+
+if (!token) {
+  console.warn('Token não encontrado. Usuário não autenticado.');
+}
+
+// ===============================
+// Carregar perfil
+// ===============================
+async function loadProfile() {
+  try {
+    const response = await API.read('/usuarios/me');
+    const user = response.usuario;
+
+    if (!user) return;
+
+    // -------------------------------
+    // Imagem de perfil
+    // -------------------------------
+    let imagePath = '/projeto/img/cara.png';
+
+    if (user.image?.path) {
+      imagePath = '/' + user.image.path;
+    }
+
+    // -------------------------------
+    // Preenchimento do DOM
+    // -------------------------------
+    const profileName = document.querySelector('#profile-name');
+    const profileEmail = document.querySelector('#profile-email');
+    const userName = document.querySelector('#user-name');
+    const profileImage = document.querySelector('#profile-image');
+    const dropdownAvatar = document.querySelector('#dropdown-avatar');
+
+    if (profileName) profileName.innerText = user.nome || '';
+    if (profileEmail) profileEmail.innerText = user.email || '';
+    if (userName) userName.innerText = user.nome || '';
+    if (profileImage) profileImage.src = imagePath;
+    if (dropdownAvatar) dropdownAvatar.src = imagePath;
+
   } catch (err) {
+    // ❗ NÃO remove token
     console.error('Erro ao carregar perfil:', err);
   }
 }
 
-// Evento submit do formulário de upload
-form.onsubmit = async (event) => {
-  event.preventDefault();
+// ===============================
+// Upload de imagem
+// ===============================
+if (form) {
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault();
 
-  const formData = new FormData(form);
+    const formData = new FormData(form);
 
-  try {
-    let newImage;
+    try {
+      const response = await API.create('/usuarios/image', formData, true);
 
-    if (formMethod === 'post') {
-      newImage = await API.create('/usuarios/image', formData, true, true);
-    } else if (formMethod === 'put') {
-      newImage = await API.update('/usuarios/image', formData, true);
+      if (response?.path) {
+        const imgPath = '/' + response.path;
+
+        const profileImage = document.querySelector('#profile-image');
+        const dropdownAvatar = document.querySelector('#dropdown-avatar');
+
+        if (profileImage) profileImage.src = imgPath;
+        if (dropdownAvatar) dropdownAvatar.src = imgPath;
+      }
+
+      form.reset();
+
+    } catch (err) {
+      // ❗ NÃO remove token
+      console.error('Erro ao enviar imagem:', err);
     }
-
-    // Atualiza imagem no DOM
-    if (newImage && newImage.path) {
-      document.querySelector('#profile-image').src = newImage.path;
-      document.querySelector('#dropdown-avatar').src = newImage.path;
-    }
-
-    form.reset();
-  } catch (err) {
-    console.error('Erro ao enviar imagem:', err);
-  }
-};
-
-// Carrega o perfil se usuário estiver autenticado
-if (Auth.isAuthenticated()) {
-  loadProfile();
+  });
 }
 
-// Função de logout
+// ===============================
+// Logout (ÚNICO lugar que remove token)
+// ===============================
 window.signout = () => {
-  Auth.logout();
+  localStorage.removeItem('token');
   window.location.href = '/login.html';
 };
+
+// ===============================
+// Init
+// ===============================
+loadProfile();

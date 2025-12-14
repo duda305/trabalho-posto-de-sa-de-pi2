@@ -51,21 +51,25 @@ const contatoSchema = z.object({
 // ----------------- MULTER PARA AVATAR -----------------
 const storageAvatar = multer.diskStorage({
   destination: (req, file, cb) => {
-    const dir = './public/imgs/profile';
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-    cb(null, dir);
+    // Corrigido o caminho para "public/projeto/img"
+    const dir = path.resolve('../public/projeto/img');
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    cb(null, dir);  // Salva as imagens no diretório correto
   },
   filename: (req, file, cb) => {
     const ext = path.extname(file.originalname);
-    cb(null, `avatar_${req.userId}${ext}`);
-  },
+    cb(null, `avatar_${req.userId}${ext}`);  // Nome da imagem baseado no userId
+  }
 });
+
 const uploadAvatar = multer({ storage: storageAvatar });
 
 // ----------------- MULTER PARA FOTO MÉDICO -----------------
 const storageMedico = multer.diskStorage({
   destination: (req, file, cb) => {
-    const dir = './public/projeto/img';
+    const dir = '../public/projeto/img';
     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
     cb(null, dir);
   },
@@ -187,6 +191,40 @@ router.post(
     }
   }
 );
+router.post(
+  '/usuarios/image',
+  isAuthenticated,
+  uploadAvatar.single('image'),
+  async (req, res) => {
+    if (!req.file) {
+      return res.status(400).json({
+        status: 400,
+        message: 'Nenhuma imagem enviada'
+      });
+    }
+
+    const imagePath = `projeto/img/${req.file.filename}`;
+
+    await prisma.usuario.update({
+      where: { usuario_id: req.userId },
+      data: {
+        image: {
+          upsert: {
+            create: { path: imagePath },
+            update: { path: imagePath }
+          }
+        }
+      }
+    });
+
+    res.status(200).json({
+      status: 200,
+      path: imagePath
+    });
+  }
+);
+
+
 
 // ----------------- TRATAMENTO DE ERROS -----------------
 router.use((err, req, res) => {

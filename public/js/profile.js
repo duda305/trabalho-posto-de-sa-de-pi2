@@ -58,12 +58,13 @@ async function loadProfile() {
     if (!user) return;
 
     // -------------------------------
-    // Imagem de perfil
+    // Imagem de perfil (fallback)
     // -------------------------------
     let imagePath = '/projeto/img/cara.png';
 
     if (user.image?.path) {
-      imagePath = '/' + user.image.path;
+      // cache busting para evitar imagem antiga
+      imagePath = '/' + user.image.path + '?v=' + Date.now();
     }
 
     // -------------------------------
@@ -82,7 +83,6 @@ async function loadProfile() {
     if (dropdownAvatar) dropdownAvatar.src = imagePath;
 
   } catch (err) {
-    // ❗ NÃO remove token
     console.error('Erro ao carregar perfil:', err);
   }
 }
@@ -100,19 +100,26 @@ if (form) {
       const response = await API.create('/usuarios/image', formData, true);
 
       if (response?.path) {
-        const imgPath = '/' + response.path;
+        // cache busting após upload
+        const imgPath = '/' + response.path + '?v=' + Date.now();
 
-        const profileImage = document.querySelector('#profile-image');
-        const dropdownAvatar = document.querySelector('#dropdown-avatar');
-
-        if (profileImage) profileImage.src = imgPath;
-        if (dropdownAvatar) dropdownAvatar.src = imgPath;
+        document.querySelector('#profile-image').src = imgPath;
+        document.querySelector('#dropdown-avatar').src = imgPath;
       }
 
       form.reset();
 
+      // -------------------------------
+      // Fechar modal após upload ✅
+      // -------------------------------
+      const modalElement = document.getElementById('uploadModal');
+      const modalInstance =
+        bootstrap.Modal.getInstance(modalElement) ||
+        new bootstrap.Modal(modalElement);
+
+      modalInstance.hide();
+
     } catch (err) {
-      // ❗ NÃO remove token
       console.error('Erro ao enviar imagem:', err);
     }
   });
@@ -123,7 +130,7 @@ if (form) {
 // ===============================
 window.signout = () => {
   localStorage.removeItem('token');
-  window.location.href = '/login.html';
+  window.location.href = '/signin.html';
 };
 
 // ===============================

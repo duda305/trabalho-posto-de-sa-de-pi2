@@ -96,3 +96,72 @@ section {
     width: 16px;
     height: 16px;
 }
+/* ===========================
+   Reset
+   =========================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* ===========================
+   Corpo
+   =========================== */
+body {
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg, #e0f7fa, #b2ebf2);
+    min-height: 100vh;
+    padding: 30px;
+}
+
+/* ===========================
+   Card de Perfil
+   =========================== */
+.perfil-card {
+    max-width: 420px;
+    margin: 0 auto 30px auto;
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.12);
+}
+
+/* Foto pequena e padrão */
+.perfil-foto {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #26a69a;
+    cursor: pointer;
+}
+
+/* Dados do perfil */
+.perfil-dados {
+    flex: 1;
+}
+
+.perfil-nome {
+    display: block;
+    font-weight: bold;
+    color: #00796b;
+    margin-bottom: 6px;
+}
+
+/* Botões do perfil */
+.perfil-acoes {
+    display: flex;
+    gap: 10px;
+}
+
+.btn-perfil {
+    background-color: #0288d1;
+    color: white;
+    border: none;
+    padding: 6px 10px;
+    border-radius: 6px;
+}

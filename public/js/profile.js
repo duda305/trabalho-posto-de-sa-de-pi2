@@ -13,7 +13,7 @@ async function loadProfile() {
       imagePath = user.image.path;
       formMethod = 'put';
     } else {
-      imagePath = '/imgs/profile/avatar.png';
+      imagePath = '/projeto/img/cara.png';
       formMethod = 'post';
     }
 

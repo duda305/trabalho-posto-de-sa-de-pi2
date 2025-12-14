@@ -1,91 +1,55 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Perfil - Posto Saúde</title>
-  <style>
-    /* Fundo suave com gradiente azul claro */
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      height: 100vh;
-      display: flex;
-      justify-content: center; /* centraliza horizontalmente */
-      align-items: flex-start; /* coloca mais para cima verticalmente */
-      background: linear-gradient(to bottom, #e0f7fa, #ffffff);
-      position: relative;
-      padding-top: 80px; /* distancia do topo */
-    }
+    <meta charset="UTF-8">
+    <title>Home - Posto de Saúde</title>
 
-    /* Textura sutil de cruzes médicas */
-    body::before {
-      content: "";
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-image: url('https://www.transparenttextures.com/patterns/plus.png');
-      opacity: 0.05;
-      z-index: -1;
-    }
-
-    section {
-      background-color: rgba(255, 255, 255, 0.95);
-      padding: 50px 40px;
-      border-radius: 12px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-      text-align: center;
-      max-width: 400px;
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-
-    h2 {
-      color: #00796b; /* verde-azulado */
-      margin-bottom: 30px;
-      font-size: 26px;
-    }
-
-    button {
-      width: 80%;
-      padding: 12px;
-      margin: 10px 0;
-      font-size: 16px;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: all 0.3s;
-      color: white;
-    }
-
-    /* Botões com cores distintas */
-    button:nth-of-type(1) { background-color: #0288d1; } /* Agendar */
-    button:nth-of-type(1):hover { background-color: #0277bd; }
-
-    button:nth-of-type(2) { background-color: #26a69a; } /* Contato */
-    button:nth-of-type(2):hover { background-color: #2bbbad; }
-
-    button:nth-of-type(3) { background-color: #ef5350; } /* Sair */
-    button:nth-of-type(3):hover { background-color: #e53935; }
-  </style>
+    <!-- CSS principal -->
+    <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
-  <section>
-    <h2>Bem-vindo, Usuário!</h2>
-    <button onclick="window.location.href='servicos.html'">Agendar Consulta</button>
-    <button onclick="window.location.href='contato.html'">Fale Conosco</button>
-    <button id="logoutBtn">Sair</button>
-  </section>
 
-  <script type="module">
-    import Auth from './js/lib/auth.js';
-    document.getElementById('logoutBtn').addEventListener('click', () => {
-      Auth.signout();
-    });
-  </script>
+    <!-- Seção de Perfil -->
+    <section class="perfil-card">
+        <img 
+            src="projeto/img/cara.png"
+            alt="Foto do usuário"
+            class="perfil-foto"
+            id="userProfilePic"
+        >
+
+        <div class="perfil-dados">
+            <span class="perfil-nome">Usuário</span>
+
+            <div class="perfil-acoes">
+                <button class="btn-perfil" id="perfilBtn">
+                    Ver perfil
+                </button>
+
+                <button class="btn-sair" id="logoutBtn">
+                    Sair
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Conteúdo principal -->
+    <main class="conteudo">
+        <h2>Bem-vindo ao sistema</h2>
+        <p>Escolha uma das opções abaixo</p>
+
+        <div class="acoes">
+            <button onclick="window.location.href='servicos.html'">
+                Agendar Consulta
+            </button>
+
+            <button onclick="window.location.href='contato.html'">
+                Fale Conosco
+            </button>
+        </div>
+    </main>
+
+    <!-- JS da Home -->
+    <script src="js/home.js"></script>
 </body>
 </html>

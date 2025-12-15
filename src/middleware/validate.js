@@ -12,17 +12,19 @@ export function validate(schema) {
       return next();
     } catch (err) {
       if (err instanceof ZodError) {
+        const errors = Array.isArray(err.errors) ? err.errors.map(e => ({
+          path: e.path.join("."),
+          message: e.message,
+        })) : [];
+
         return res.status(400).json({
           status: 400,
           message: "Erro de validação",
-          errors: err.errors.map(e => ({
-            path: e.path.join("."),
-            message: e.message,
-          })),
+          errors,
         });
       }
 
-      return next(err); // erros inesperados
+      return next(err); 
     }
   };
 }

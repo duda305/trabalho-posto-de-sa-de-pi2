@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!DOCTYPE html> 
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
@@ -6,6 +6,147 @@
 
     <!-- CSS principal -->
     <link rel="stylesheet" href="css/styles.css">
+    <style>
+        /* Reset básico */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Centraliza o conteúdo e ajusta o fundo */
+        body {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start; /* Ajuste para mover para cima */
+            padding-top: 50px; /* Deixa o conteúdo mais para cima */
+            font-family: 'Arial', sans-serif;
+            background-color: #a3d8f4; /* Azul claro */
+        }
+
+        /* Card do perfil */
+        .perfil-card {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background-color: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 350px;
+            text-align: center;
+        }
+
+        /* Foto do perfil */
+        .perfil-foto {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #fff;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Dados do perfil */
+        .perfil-dados {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .perfil-nome {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #333;
+        }
+
+        /* Botões do perfil */
+        .perfil-acoes {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        /* Botões de ação */
+        .btn-perfil, .btn-sair {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9em;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn-perfil {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .btn-sair {
+            background-color: #f44336;
+            color: white;
+        }
+
+        .btn-perfil:hover {
+            background-color: #45a049;
+        }
+
+        .btn-sair:hover {
+            background-color: #e53935;
+        }
+
+        /* Conteúdo principal */
+        .conteudo {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .conteudo h2 {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .conteudo p {
+            font-size: 1.1em;
+            color: #666;
+        }
+
+        /* Botões principais */
+        .acoes {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .acoes button {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s ease;
+        }
+
+        .acoes button:hover {
+            opacity: 0.9;
+        }
+
+        .acoes button:first-child {
+            background-color: #2196F3;
+            color: white;
+        }
+
+        .acoes button:last-child {
+            background-color: #FF9800;
+            color: white;
+        }
+    </style>
 </head>
 <body>
 

@@ -12,9 +12,72 @@
     />
     <link rel="stylesheet" href="css/styles.css" />
     <script src="https://code.iconify.design/3/3.1.0/iconify.min.js"></script>
+
+    <style>
+      /* Estilo para a imagem de perfil com hover */
+      #profile-image {
+        width: 200px;
+        height: 200px;
+        object-fit: cover;
+        border: 3px solid #ccc;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+      }
+
+      #profile-image:hover {
+        transform: scale(1.05);
+        box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+      }
+
+      /* Botões com efeito de hover */
+      .btn-primary {
+        transition: background-color 0.3s ease;
+      }
+
+      .btn-primary:hover {
+        background-color: #005fa3;
+      }
+
+      .modal-content {
+        border-radius: 10px;
+      }
+
+      /* Estilo do modal */
+      .modal-body input {
+        display: block;
+        width: 100%;
+        padding: 8px;
+        margin-top: 10px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+      }
+
+      /* Link de editar imagem com efeito */
+      .modal-body a {
+        font-size: 14px;
+        color: #007bff;
+        text-decoration: none;
+      }
+
+      .modal-body a:hover {
+        text-decoration: underline;
+      }
+
+      /* Estilos gerais */
+      .navbar {
+        background-color: #007bff;
+      }
+
+      .navbar-brand, .nav-link {
+        color: white !important;
+      }
+
+      .navbar-nav .nav-link:hover {
+        color: #ffeb3b !important;
+      }
+    </style>
   </head>
   <body class="pb-5">
-    <nav class="navbar navbar-expand-lg bg-body-tertiary">
+    <nav class="navbar navbar-expand-lg">
       <div class="container">
         <a class="navbar-brand" href="/home.html">Posto de Saúde</a>
         <button
@@ -74,7 +137,6 @@
           <img
             src="/projeto/img/cara.png"
             alt="Foto de Perfil"
-            width="200px"
             id="profile-image"
             class="rounded-circle border border-secondary-subtle border-3"
           />
@@ -117,6 +179,7 @@
             </div>
             <div class="modal-body">
               <input type="file" id="image" name="image" required />
+              <a href="#" class="mt-2">Cancelar</a>
             </div>
             <div class="modal-footer">
               <button

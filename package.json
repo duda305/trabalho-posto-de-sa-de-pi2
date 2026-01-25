@@ -6,7 +6,9 @@
     "dev": "node --watch src/index.js",
     "db:load": "node src/database/load.js",
     "db:reload": "npm run db:drop && npm run db:load",
-    "db:drop": "rm src/database/db.sqlite"
+    "db:drop": "rm src/database/db.sqlite",
+    "test": "NODE_ENV=test jest",
+    "test:e2e": "playwright test"
   },
   "prisma": {
     "seed": "node seed.js",
@@ -25,5 +27,11 @@
     "nodemailer": "^7.0.11",
     "prisma": "^5.22.0",
     "zod": "^4.1.12"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.58.0",
+    "@types/node": "^25.0.10",
+    "jest": "^30.2.0",
+    "supertest": "^7.2.2"
   }
 }

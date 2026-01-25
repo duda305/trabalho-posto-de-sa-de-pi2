@@ -15,8 +15,11 @@ dotenv.config({
   path: path.join(__dirname, "../.env"),
 });
 
-console.log("DATABASE_URL:", process.env.DATABASE_URL);
-console.log("JWT_SECRET:", process.env.JWT_SECRET);
+// (Opcional) só mostra no console fora do ambiente de teste
+if (process.env.NODE_ENV !== "test") {
+  console.log("DATABASE_URL:", process.env.DATABASE_URL);
+  console.log("JWT_SECRET:", process.env.JWT_SECRET);
+}
 
 // ============================================================================
 // IMPORTS DA APLICAÇÃO (devem vir DEPOIS do dotenv.config())
@@ -74,8 +77,19 @@ app.use((err, req, res, next) => {
   });
 });
 
-// ----------------- INICIAR SERVIDOR -----------------
+// ============================================================================
+// EXPORT DO APP (SUPERTEST PRECISA DISSO)
+// ============================================================================
+
+// ============================================================================
+// INICIAR SERVIDOR (SÓ FORA DOS TESTES)
+// ============================================================================
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`🚀 Servidor rodando em: http://localhost:${PORT}`);
-});
+
+if (process.env.NODE_ENV !== "test") {
+  app.listen(PORT, () => {
+    console.log(`🚀 Servidor rodando em: http://localhost:${PORT}`);
+  });
+}
+
+export default app;

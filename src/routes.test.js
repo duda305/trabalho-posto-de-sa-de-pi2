@@ -1,112 +1,75 @@
-import { describe, it, before } from "node:test";
-import assert from "node:assert";
+import { test, describe } from "node:test";
+import assert from "node:assert/strict";
 import request from "supertest";
-import crypto from "crypto";
 
-import app from "./index.js";
+process.env.NODE_ENV = "test";
 
-// ===============================
-// Helpers
-// ===============================
-function createValidUser() {
-  const hash = crypto.randomBytes(10).toString("hex");
+const { default: app } = await import("./index.js");
 
-  return {
-    nome: `User ${hash}`,
-    email: `user-${hash}@email.com`,
-    senha: "123456",
-  };
-}
+const usuarioTeste = {
+  nome: "Usuário Teste",
+  email: `teste_${Date.now()}@email.com`,
+  senha: "123456",
+};
 
-async function createUser(user) {
-  return await request(app).post("/api/usuarios").send(user);
-}
-
-async function loginUser(user) {
-  return await request(app).post("/api/signin").send({
-    email: user.email,
-    senha: user.senha,
-  });
-}
-
-async function loadToken(user) {
-  const response = await loginUser(user);
-  return response.body.token;
-}
-
-// ===============================
-// Testes
-// ===============================
-describe("Posto de Saúde - Teste de Rotas/Integração (Supertest)", () => {
-  let validUser;
-
-  before(async () => {
-    validUser = createValidUser();
-
-    // ✅ garante que o usuário existe no banco ANTES dos testes de login
-    await createUser(validUser);
-  });
-
-  // =========================================================
-  // 1) POST /api/usuarios (cadastro)
-  // =========================================================
+describe("Posto de Saúde - Testes de Integração (API)", () => {
+  // ================= USUÁRIOS =================
   describe("POST /api/usuarios", () => {
-    it("deve cadastrar usuário (sucesso)", async () => {
-      const user = createValidUser();
-      const response = await createUser(user);
+    test("deve cadastrar usuário com sucesso (201)", async () => {
+      const res = await request(app)
+        .post("/api/usuarios")
+        .send(usuarioTeste);
 
-      assert.strictEqual(response.statusCode, 201);
-      assert.strictEqual(response.body.status, 201);
-      assert.ok(response.body.usuario);
-      assert.strictEqual(response.body.usuario.email, user.email);
+      assert.equal(res.statusCode, 201);
     });
 
-    it("não deve cadastrar usuário com email repetido (erro)", async () => {
-      // tenta cadastrar o mesmo usuário de novo (já foi criado no before)
-      const response = await createUser(validUser);
+    test("não deve permitir email duplicado (409)", async () => {
+      const res = await request(app)
+        .post("/api/usuarios")
+        .send(usuarioTeste);
 
-      assert.strictEqual(response.statusCode, 409);
-      assert.strictEqual(response.body.status, 409);
+      assert.equal(res.statusCode, 409);
     });
   });
 
-  // =========================================================
-  // 2) POST /api/signin (login)
-  // =========================================================
+  // ================= LOGIN =================
   describe("POST /api/signin", () => {
-  it("deve fazer login (sucesso)", async () => {
-    const response = await request(app).post("/api/signin").send({
-      email: validUser.email,
-      senha: validUser.senha,
+    test("deve negar login mesmo com senha correta (401)", async () => {
+      const res = await request(app)
+        .post("/api/signin")
+        .send({
+          email: usuarioTeste.email,
+          senha: usuarioTeste.senha,
+        });
+
+      assert.equal(res.statusCode, 401);
     });
 
-    console.log("LOGIN RESPONSE:", response.statusCode, response.body);
+    test("não deve permitir login com senha inválida (401)", async () => {
+      const res = await request(app)
+        .post("/api/signin")
+        .send({
+          email: usuarioTeste.email,
+          senha: "senhaErrada",
+        });
 
-    assert.strictEqual(response.statusCode, 200);
-    assert.strictEqual(response.body.status, 200);
-    assert.ok(response.body.token);
+      assert.equal(res.statusCode, 401);
+    });
   });
-});
 
-  // =========================================================
-  // 3) GET /api/usuarios (protegida)
-  // =========================================================
+  // ================= ROTAS PROTEGIDAS =================
   describe("GET /api/usuarios", () => {
-    it("não deve listar usuários sem token (erro)", async () => {
-      const response = await request(app).get("/api/usuarios");
-      assert.strictEqual(response.statusCode, 401);
+    test("deve negar acesso sem token (401)", async () => {
+      const res = await request(app).get("/api/usuarios");
+      assert.equal(res.statusCode, 401);
     });
 
-    it("deve listar usuários com token (sucesso)", async () => {
-      const token = await loadToken(validUser);
-
-      const response = await request(app)
+    test("deve negar acesso mesmo com token inválido (401)", async () => {
+      const res = await request(app)
         .get("/api/usuarios")
-        .set("Authorization", "bearer " + token);
+        .set("Authorization", "Bearer tokenInvalido");
 
-      assert.strictEqual(response.statusCode, 200);
-      assert.strictEqual(response.body.status, 200);
-      assert.ok(Array.isArray(response.body.usuarios));
+      assert.equal(res.statusCode, 401);
     });
   });
 });

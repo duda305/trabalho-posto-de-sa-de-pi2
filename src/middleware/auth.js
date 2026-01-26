@@ -1,27 +1,35 @@
-import jwt from 'jsonwebtoken';
+import jwt from "jsonwebtoken";
 
 function isAuthenticated(req, res, next) {
   try {
-    const { authorization } = req.headers;
+    const authHeader = req.headers.authorization;
 
-    if (!authorization) {
-      return res.status(401).json({ auth: false, message: 'Token não fornecido.' });
+    if (!authHeader) {
+      return res.status(401).json({
+        status: 401,
+        message: "Token não fornecido",
+      });
     }
 
-    const parts = authorization.split(' ');
-    if (parts.length !== 2 || parts[0] !== 'Bearer') {
-      return res.status(401).json({ auth: false, message: 'Formato do token inválido.' });
+    const [scheme, token] = authHeader.split(" ");
+
+    if (!scheme || !token || scheme.toLowerCase() !== "bearer") {
+      return res.status(401).json({
+        status: 401,
+        message: "Formato do token inválido",
+      });
     }
 
-    const token = parts[1];
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    const { userId } = jwt.verify(token, process.env.JWT_SECRET);
+    req.userId = decoded.userId;
 
-    req.userId = userId;
-
-    next();
+    return next();
   } catch (error) {
-    return res.status(401).json({ auth: false, message: 'Token inválido.' });
+    return res.status(401).json({
+      status: 401,
+      message: "Token inválido ou expirado",
+    });
   }
 }
 
